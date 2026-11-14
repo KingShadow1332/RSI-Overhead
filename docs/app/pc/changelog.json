@@ -33,5 +33,10 @@
   "version": 7,
   "name": "1.0.6",
   "notes": "Auto-Update standardmaessig an (alle 30 Min., nie waehrend Star Citizen). Module: Hoehe/Spaltenbreite ziehen, Tasten und Buttons pro Modul hinzufuegen/entfernen."
+ },
+ {
+  "version": 8,
+  "name": "1.0.7",
+  "notes": "Fix: Das Programm beendet sich nicht mehr selbst, wenn das Fenster minimiert oder hinter dem Spiel verdeckt ist (Beenden jetzt nur noch, wenn das Fenster geschlossen wird)."
  }
 ]

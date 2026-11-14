@@ -636,6 +636,7 @@ def main():
     state["port"] = srv.server_address[1]
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     url = f"http://127.0.0.1:{state['port']}/"
+    use_window = False
     if "--no-window" in sys.argv:
         print(url, flush=True)
     else:
@@ -647,6 +648,7 @@ def main():
             if "--minimized" in sys.argv:
                 args.append("--start-minimized")
             subprocess.Popen(args)
+            use_window = True
         else:
             import webbrowser
             webbrowser.open(url)
@@ -655,9 +657,22 @@ def main():
     if "--no-update-check" not in sys.argv:
         threading.Thread(target=update_loop, daemon=True).start()
     t0 = time.time()
+    seen_win, missing = False, 0
     while True:
         time.sleep(1)
-        if HIDDEN.get("on"):                      # versteckt: Seite wird gedrosselt, kein Heartbeat erwartet
+        if use_window:
+            # Beenden, wenn das FENSTER weg ist - nicht am Heartbeat der Seite: minimiert oder hinter dem Spiel verdeckt
+            # drosselt der Browser die Seite stark, das Programm wuerde sich sonst selbst beenden.
+            if HIDDEN.get("on") or find_window():
+                seen_win, missing = seen_win or not HIDDEN.get("on"), 0
+            else:
+                missing += 1
+            if seen_win and missing > 10:
+                break
+            if not seen_win and time.time() - t0 > 60:
+                break
+            continue
+        if HIDDEN.get("on"):                      # (nur ohne eigenes Fenster) versteckt: kein Heartbeat erwartet
             state["last_seen"] = time.time()
         if state["seen"] and time.time() - state["last_seen"] > 10:
             break
