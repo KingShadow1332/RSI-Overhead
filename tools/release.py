@@ -3,7 +3,8 @@
     python tools/release.py "Was ist neu"                  naechste Version (+1), Name 1.0.0 -> 1.0.1
     python tools/release.py "Was ist neu" --name 1.1.0     eigener Versionsname
     python tools/release.py "Erste Version" --keep-version Version NICHT erhoehen (erste Veroeffentlichung)
-    ... --push                                             danach git add/commit/push
+    ... --push                                             danach git add/commit/push + GitHub-Release (Download)
+    python tools/release.py --github-only                  nur den GitHub-Release der aktuellen Version anlegen
 
 Das Skript setzt VERSION/VERSION_NAME in updater.py, packt NUR Programmdateien in docs/app/pc/rsi-overhead.zip,
 schreibt version.json (mit SHA-256) und haengt den Eintrag an changelog.json an.
@@ -30,8 +31,54 @@ def read_version():
     return s, v, n
 
 
+EXTRA = ["Setup.py", "Setup.bat", "RSI Overhead.bat"]      # nur im Download-Paket (Installer), nicht im Update
+
+
+def installer_zip(name):
+    """Komplettes Download-Paket fuer GitHub Releases: entpacken, Setup.bat starten."""
+    os.makedirs(os.path.join(ROOT, "dist"), exist_ok=True)
+    zpath = os.path.join(ROOT, "dist", "RSI-Overhead-%s.zip" % name)
+    entries = [(os.path.join(ROOT, f), f) for f in FILES + EXTRA]
+    for d in DIRS:
+        for dp, dn, fn in os.walk(os.path.join(ROOT, d)):
+            dn[:] = sorted(x for x in dn if x not in SKIP_DIRS)
+            for x in sorted(fn):
+                full = os.path.join(dp, x)
+                entries.append((full, os.path.relpath(full, ROOT).replace("\\", "/")))
+    with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
+        for full, arc in entries:
+            z.write(full, "RSI Overhead/" + arc)
+    return zpath
+
+
+def find_gh():
+    import shutil
+    return shutil.which("gh") or next((p for p in (r"C:\Program Files\GitHub CLI\gh.exe",) if os.path.isfile(p)), None)
+
+
+def github_release(name, notes):
+    """Legt auf GitHub einen Release v<name> mit dem Installer-Paket an (zum Herunterladen)."""
+    gh = find_gh()
+    if not gh:
+        print("gh (GitHub CLI) nicht gefunden - Release uebersprungen.")
+        return
+    tag = "v" + name
+    if subprocess.run([gh, "release", "view", tag], cwd=ROOT, capture_output=True).returncode == 0:
+        print("Release %s existiert bereits - uebersprungen." % tag)
+        return
+    zpath = installer_zip(name)
+    subprocess.run([gh, "release", "create", tag, zpath, "--target", "main", "--title", "RSI Overhead " + name, "--notes",
+                    notes + "\n\nInstallation: Zip entpacken, `Setup.bat` starten (Python 3 noetig)."], cwd=ROOT, check=True)
+    print("GitHub-Release %s veroeffentlicht." % tag)
+
+
 def main():
     a = sys.argv[1:]
+    if "--github-only" in a:                               # nur Release fuer die aktuelle Version (Notizen aus changelog.json)
+        _, ver, name = read_version()
+        cl = json.load(open(os.path.join(OUT, "changelog.json"), encoding="utf-8"))
+        notes = next((e["notes"] for e in cl if int(e["version"]) == ver), "RSI Overhead " + name)
+        return github_release(name, notes)
     if not a or a[0].startswith("--"):
         sys.exit(__doc__)
     notes = a[0]
@@ -83,6 +130,7 @@ def main():
         run("git", "commit", "-m", "Release %s: %s" % (name, notes))
         run("git", "push")
         print("Gepusht. GitHub Pages ist in ca. 1 Minute aktuell.")
+        github_release(name, notes)
     else:
         print("Naechster Schritt: git add -A && git commit -m \"Release %s\" && git push" % name)
 

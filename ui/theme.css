@@ -164,3 +164,7 @@ nav{display:flex;gap:4px}
 #modal .sh-close{font-size:16px;color:var(--acc)}
 #modal .sh-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 #modal .card{animation:none}
+/* Zahnrad oben links */
+.ib.big{width:46px;height:46px;border-radius:12px;border-color:var(--acc);background:var(--acc-a);box-shadow:0 0 14px var(--acc-g)}
+.ib.big svg{width:22px;height:22px}
+.ib.big:hover{box-shadow:0 0 18px var(--acc-s)}

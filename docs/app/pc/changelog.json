@@ -18,5 +18,10 @@
   "version": 4,
   "name": "1.0.3",
   "notes": "Einstellungen: Hotkey selbst festlegen, Vordergrund/Fokus getrennt, Fenstergroesse, Minimiert starten. Startseite nur noch Star Citizen (Tasten + Buttons)."
+ },
+ {
+  "version": 5,
+  "name": "1.0.4",
+  "notes": "Einstellungs-Zahnrad jetzt oben links. Tote Symbole (Verbindung, Schutz) entfernt. Download-Paket als GitHub-Release."
  }
 ]

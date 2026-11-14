@@ -12,3 +12,6 @@ __pycache__/
 
 # Original-Logo (gross, nur lokal)
 design/Logo-original.png
+
+# Download-Pakete (werden als GitHub Release hochgeladen)
+dist/

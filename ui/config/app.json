@@ -29,26 +29,19 @@
     "ready": "BEREIT ZUM START",
     "running": "STAR CITIZEN LÄUFT"
   },
+  "leftButtons": [
+    {
+      "icon": "gear",
+      "title": "Einstellungen (Auto-Start, Hotkey, Fenster, Update …)",
+      "action": "settings",
+      "big": true
+    }
+  ],
   "headerButtons": [
     {
       "icon": "edit",
       "title": "Layout bearbeiten (Module)",
       "action": "edit"
-    },
-    {
-      "icon": "gear",
-      "title": "Einstellungen",
-      "action": "settings"
-    },
-    {
-      "icon": "wifi",
-      "title": "Verbindung",
-      "toast": "Verbindung: siehe PING auf der Start-Seite"
-    },
-    {
-      "icon": "shield",
-      "title": "Schutz",
-      "toast": "Nicht verbunden"
     }
   ],
   "labelActions": {

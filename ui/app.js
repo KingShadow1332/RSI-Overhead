@@ -452,23 +452,26 @@ function build() {
   const A = CFG.app;
   document.title = A.title;
   $('#root').innerHTML = `<div id="frame"><div id="scan" aria-hidden="true"></div>
-    <div id="top"><div id="brand"><b></b><i></i></div><nav></nav><span class="grow"></span><span id="hb" style="display:flex;gap:14px"></span></div>
+    <div id="top"><span id="hl" style="display:flex;gap:10px;margin-right:6px"></span><div id="brand"><b></b><i></i></div><nav></nav><span class="grow"></span><span id="hb" style="display:flex;gap:14px"></span></div>
     <div id="pills"></div><div id="grid"></div><div id="lib"></div>
     <div id="foot"><div style="display:flex;align-items:center;gap:10px"><span class="lockic">${icon('lock', 'var(--bad)')}</span><button class="bad" id="fr"></button></div>
       <div id="hz"></div><div style="width:220px"><button class="btn" id="fc"></button></div></div>
     <div id="modal"></div><div id="toast"></div></div>`;
   $('#brand b').textContent = A.brand; $('#brand i').textContent = A.brandSub === 'auto' ? (THEME === 'RSI' ? 'STAR CITIZEN' : THEME) : A.brandSub;
   CFG.pages.pages.forEach(p => { const t = h('button', 'tab'); t.textContent = p.title; t.dataset.p = p.id; t.onclick = () => setPage(p.id); $('nav').append(t); });
-  A.headerButtons.forEach(b => {
-    const x = h('button', 'ib', icon(b.icon)); x.title = b.title; x.setAttribute('aria-label', b.title);
+  /* leftButtons = oben links (Zahnrad), headerButtons = oben rechts; beide aus config/app.json */
+  const headerBtn = (b, host) => {
+    const x = h('button', 'ib' + (b.big ? ' big' : ''), icon(b.icon)); x.title = b.title; x.setAttribute('aria-label', b.title);
     if (b.action) x.dataset.act = b.action;
     x.onclick = () => {
       if (b.action === 'edit') setEdit(!EDIT);
       else if (b.action === 'settings') openSettings();
       else if (b.goto) setPage(b.goto); else toast(b.toast || '');
     };
-    $('#hb').append(x);
-  });
+    host.append(x);
+  };
+  (A.leftButtons || []).forEach(b => headerBtn(b, $('#hl')));
+  A.headerButtons.forEach(b => headerBtn(b, $('#hb')));
   const pl = $('#pills');
   A.pills.forEach(p => pl.append(h('span', 'pill ok', `<i></i>${esc(p.label)}`)));
   pl.querySelectorAll('.pill').forEach((e, i) => e.dataset.status = A.pills[i].status);
