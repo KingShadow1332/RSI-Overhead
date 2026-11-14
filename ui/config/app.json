@@ -68,7 +68,8 @@
     "LAUNCHER BEENDEN": "quit",
     "PFAD ÄNDERN": "paths.change",
     "NACH UPDATE SUCHEN": "update.check",
-    "LAYOUT BEARBEITEN": "layout.edit"
+    "LAYOUT BEARBEITEN": "layout.edit",
+    "HOTKEY ÄNDERN": "hotkey.change"
   },
   "footer": {
     "reset": "STANDARD ZURÜCKSETZEN",

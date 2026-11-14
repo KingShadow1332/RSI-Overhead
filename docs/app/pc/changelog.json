@@ -13,5 +13,10 @@
   "version": 3,
   "name": "1.0.2",
   "notes": "Themes fuer weitere Hersteller (Crusader, Aegis, Anvil, Esperia, Mirai, Gatac, Kruger). Tote Karten entfernt; Auto-Start und Co. nur noch im Einstellungs-Fenster."
+ },
+ {
+  "version": 4,
+  "name": "1.0.3",
+  "notes": "Einstellungen: Hotkey selbst festlegen, Vordergrund/Fokus getrennt, Fenstergroesse, Minimiert starten. Startseite nur noch Star Citizen (Tasten + Buttons)."
  }
 ]

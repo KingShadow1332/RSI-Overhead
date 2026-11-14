@@ -37,7 +37,8 @@ user32 = ctypes.windll.user32
 kernel32 = ctypes.windll.kernel32
 
 DEFAULTS = {"ui": {}, "game_dir": "", "hotkey": "ctrl+shift+f9", "no_focus": True, "always_on_top": True,
-            "window": [1000, 1030], "auto_update": False}
+            "window": [1000, 1030], "auto_update": False, "start_minimized": True}
+WIN_SIZES = [[820, 840], [1000, 1030], [1300, 1330]]          # klein / mittel / gross
 UPDATE_STATE = {"available": False, "latest_name": "", "checked": 0}
 lock = threading.Lock()
 STATUS_URL = "https://status.robertsspaceindustries.com"
@@ -85,7 +86,7 @@ def autostart_enabled():
 def set_autostart(on):
     with winreg.OpenKey(winreg.HKEY_CURRENT_USER, RUN_KEY, 0, winreg.KEY_SET_VALUE) as k:
         if on:
-            winreg.SetValueEx(k, RUN_NAME, 0, winreg.REG_SZ, launch_command(True))
+            winreg.SetValueEx(k, RUN_NAME, 0, winreg.REG_SZ, launch_command(bool(CFG.get("start_minimized", True))))
         else:
             try:
                 winreg.DeleteValue(k, RUN_NAME)
@@ -119,12 +120,19 @@ def game_paths():
             "cache": os.path.join(os.environ.get("LOCALAPPDATA", ""), "Star Citizen")}
 
 
+def win_size_index():
+    w = (CFG.get("window") or WIN_SIZES[1])[0]
+    return min(range(len(WIN_SIZES)), key=lambda i: abs(WIN_SIZES[i][0] - w))
+
+
 def game_info():
     info = {"version": "—", "build": "—", "channel": os.path.basename(GAME) if GAME else "—", "device": "—",
             "paths": game_paths(), "game_running": game_running(),
             "app_version": updater.VERSION_NAME, "update": dict(UPDATE_STATE),
             "settings": {"autostart": autostart_enabled(), "autoupdate": bool(CFG.get("auto_update", False)),
-                         "overlay": bool(CFG.get("no_focus", True) and CFG.get("always_on_top", True))}}
+                         "overlay": bool(CFG.get("no_focus", True) and CFG.get("always_on_top", True)),
+                         "ontop": bool(CFG.get("always_on_top", True)), "nofocus": bool(CFG.get("no_focus", True)),
+                         "startmin": bool(CFG.get("start_minimized", True)), "winsize": win_size_index()}}
     m = load_json(os.path.join(GAME, "build_manifest.id"), None) if GAME else None
     if isinstance(m, dict):
         d = m.get("Data", m)
@@ -330,13 +338,39 @@ def window_guard():
         time.sleep(1.5)
 
 
+def resize_window(w, h):
+    """Fenstergroesse sofort aendern (ohne Fokus, ohne Position/Reihenfolge anzufassen)."""
+    hwnd = find_window()
+    if hwnd:
+        user32.SetWindowPos(hwnd, 0, 0, 0, int(w), int(h), 0x0002 | 0x0004 | 0x0010)   # NOMOVE | NOZORDER | NOACTIVATE
+
+
+def combo_to_hotkey(combo):
+    """'Left Ctrl + Left Shift + F9' -> 'ctrl+shift+f9'. None, wenn nicht als Hotkey nutzbar."""
+    toks = []
+    for part in combo.split(" + "):
+        pl = part.lower()
+        t = {"left ctrl": "ctrl", "right ctrl": "ctrl", "left shift": "shift", "right shift": "shift",
+             "left alt": "alt", "right alt": "alt"}.get(pl, pl)
+        if t not in NAME_VK or t in toks:
+            return None
+        toks.append(t)
+    mods = [t for t in toks if t in ("ctrl", "shift", "alt")]
+    keys = [t for t in toks if t not in ("ctrl", "shift", "alt")]
+    if len(keys) != 1 or (not mods and not keys[0].startswith("f")):
+        return None                                        # eine Taste + mind. ein Modifikator (F-Tasten auch allein)
+    return "+".join(mods + keys)
+
+
 def hotkey_loop():
-    vks = [NAME_VK[t] for t in CFG.get("hotkey", "").lower().replace(" ", "").split("+") if t in NAME_VK]
-    if not vks:
-        return
-    was, hidden = False, False
+    was, hidden, last, vks = False, False, None, []
     while True:
-        now = all(is_down(v) for v in vks)
+        hk = CFG.get("hotkey", "")
+        if hk != last:                                     # Hotkey kann im Programm geaendert werden
+            last = hk
+            vks = [NAME_VK[t] for t in hk.lower().replace(" ", "").split("+") if t in NAME_VK]
+            was = False
+        now = bool(vks) and all(is_down(v) for v in vks)
         if now and not was:
             hwnd = find_window() if not hidden else HIDDEN.get("h")
             if hwnd:
@@ -439,21 +473,46 @@ class H(BaseHTTPRequestHandler):
                 os.startfile(d)
                 return self._send(200, {"ok": True})
             return self._send(200, {"ok": False, "error": "NICHT GEFUNDEN"})
+        if p == "/api/hotkey":
+            combo = capture_key()
+            if not combo:
+                return self._send(200, {"ok": False, "error": "ABGEBROCHEN"})
+            hk = combo_to_hotkey(combo)
+            if not hk:
+                return self._send(200, {"ok": False, "error": "UNGUELTIG: " + combo[:30]})
+            with lock:
+                CFG["hotkey"] = hk
+                save_json(SETTINGS, CFG)
+            return self._send(200, {"ok": True, "hotkey": hk})
         if p == "/api/setting":
-            key, val = body.get("key"), bool(body.get("value"))
+            key, raw = body.get("key"), body.get("value")
+            val = bool(raw)
             if key == "autostart":
                 try:
                     set_autostart(val)
                 except OSError:
                     return self._send(200, {"ok": False, "error": "AUTOSTART FEHLGESCHLAGEN"})
-            elif key == "overlay":
+            elif key in ("overlay", "ontop", "nofocus", "autoupdate", "startmin"):
+                names = {"overlay": ("no_focus", "always_on_top"), "ontop": ("always_on_top",), "nofocus": ("no_focus",),
+                         "autoupdate": ("auto_update",), "startmin": ("start_minimized",)}[key]
                 with lock:
-                    CFG["no_focus"] = CFG["always_on_top"] = val
+                    for n in names:
+                        CFG[n] = val
                     save_json(SETTINGS, CFG)
-            elif key == "autoupdate":
+                if key == "startmin" and autostart_enabled():
+                    try:
+                        set_autostart(True)                # Eintrag mit/ohne --minimized neu schreiben
+                    except OSError:
+                        pass
+            elif key == "winsize":
+                try:
+                    i = max(0, min(len(WIN_SIZES) - 1, int(raw)))
+                except (TypeError, ValueError):
+                    return self._send(200, {"ok": False})
                 with lock:
-                    CFG["auto_update"] = val
+                    CFG["window"] = WIN_SIZES[i]
                     save_json(SETTINGS, CFG)
+                resize_window(*WIN_SIZES[i])
             else:
                 return self._send(200, {"ok": False})
             return self._send(200, {"ok": True})

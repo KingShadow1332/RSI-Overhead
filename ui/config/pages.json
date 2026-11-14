@@ -6,38 +6,38 @@
    "columns": [
     [
      {
-      "title": "SYSTEM-STATUS",
+      "title": "STAR-CITIZEN-TASTEN",
       "flex": true,
       "controls": [
        {
-        "type": "kv",
-        "label": "CPU",
-        "value": "—",
-        "bind": "cpu"
+        "type": "key",
+        "label": "ZIEL SPERREN",
+        "placeholder": "[TASTE]"
        },
        {
-        "type": "kv",
-        "label": "RAM",
-        "value": "—",
-        "bind": "ram"
+        "type": "key",
+        "label": "DECOUPLE",
+        "placeholder": "[TASTE]"
        },
        {
-        "type": "kv",
-        "label": "PING",
-        "value": "—",
-        "bind": "ping"
+        "type": "key",
+        "label": "CRUISE CONTROL",
+        "placeholder": "[TASTE]"
        },
        {
-        "type": "kv",
-        "label": "STAR CITIZEN",
-        "value": "—",
-        "bind": "game"
+        "type": "key",
+        "label": "QUANTUM-REISE",
+        "placeholder": "[TASTE]"
        },
        {
-        "type": "kv",
-        "label": "BUILD",
-        "value": "—",
-        "bind": "build"
+        "type": "key",
+        "label": "NOISE",
+        "placeholder": "[TASTE]"
+       },
+       {
+        "type": "key",
+        "label": "FLARES",
+        "placeholder": "[TASTE]"
        }
       ]
      }
@@ -69,10 +69,12 @@
         "value": "START · STAR CITIZEN LIVE"
        }
       ]
-     },
+     }
+    ],
+    [
      {
       "title": "SCHNELLZUGRIFF",
-      "flex": false,
+      "flex": true,
       "controls": [
        {
         "type": "btnrow",
@@ -93,23 +95,6 @@
         "items": [
          "SHADER-CACHE",
          "KEYBINDS SICHERN"
-        ]
-       }
-      ]
-     }
-    ],
-    [
-     {
-      "title": "ORDNER",
-      "flex": true,
-      "controls": [
-       {
-        "type": "btnrow",
-        "items": [
-         "SPIEL",
-         "LOGS",
-         "SCREENS",
-         "CONFIG"
         ]
        }
       ]

@@ -122,6 +122,14 @@ ACTIONS['update.check'] = async btn => {
   if (btn) { btn.dataset.ready = '1'; btn.textContent = 'UPDATE INSTALLIEREN'; }
 };
 ACTIONS['layout.edit'] = () => { closeSettings(); setEdit(true); };
+/* Hotkey zum Ein-/Ausblenden: neue Tastenkombination druecken (ohne Fenster-Fokus aufgenommen). Esc = abbrechen. */
+ACTIONS['hotkey.change'] = async btn => {
+  const old = btn ? btn.textContent : '';
+  if (btn) btn.textContent = 'TASTENKOMBINATION DRÜCKEN …';
+  const r = await api('/api/hotkey', {});
+  if (btn) btn.textContent = old;
+  if (r.ok) { await refresh(); renderPage(); toast('HOTKEY: ' + r.hotkey.toUpperCase().replace(/\+/g, ' + ')); } else toast(r.error || 'FEHLER');
+};
 ACTIONS.quit = async () => { await api('/api/quit', {}); toast('BEENDET'); setTimeout(() => window.close(), 300); };
 ACTIONS['paths.change'] = async () => {
   toast('ORDNER WÄHLEN …');
@@ -161,12 +169,18 @@ function updateLive() {
 /* ---------- Elemente ---------- */
 const RENDER = {
   seg(c, id) {
-    const cur = c.apply === 'theme' ? c.options.indexOf(THEME) : get(id, c.value);
+    /* apply: 'theme' = Farbschema; sonst echte Host-Einstellung (z. B. winsize) mit Index als Wert */
+    const real = c.apply && c.apply !== 'theme' && S.info && S.info.settings ? S.info.settings[c.apply] : undefined;
+    const cur = c.apply === 'theme' ? c.options.indexOf(THEME) : real !== undefined ? real : get(id, c.value);
     const w = h('div', 'row');
     c.options.forEach((o, i) => {
       const l = h('label', 'seg', `<input type="radio" name="${esc(id)}" ${i === cur ? 'checked' : ''}><span>${esc(o)}</span>`);
-      $('input', l).onchange = () => {
-        if (c.apply === 'theme') { set('theme', o); applyTheme(o); renderPage(); } else set(id, i);
+      $('input', l).onchange = async () => {
+        if (c.apply === 'theme') { set('theme', o); applyTheme(o); renderPage(); }
+        else if (c.apply) {
+          const r = await api('/api/setting', { key: c.apply, value: i });
+          if (r.ok) { await refresh(); toast(o); } else toast(r.error || 'FEHLER');
+        } else set(id, i);
       };
       w.append(l);
     });
