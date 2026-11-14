@@ -1,5 +1,7 @@
 # RSI Overhead
 
+**Download:** [Neueste Version (Zip)](https://github.com/KingShadow1332/RSI-Overhead/releases/latest) – entpacken, `Setup.bat` starten.
+
 ## Installieren (empfohlen, auch auf anderen PCs mit Python)
 `Setup.bat` doppelklicken. Der Installer kopiert das Programm nach `Dokumente\RSI Overhead` (wie A.R.I; der Ordner ist waehlbar),
 legt Desktop- und Startmenue-Verknuepfung mit dem Logo an (optional: Autostart mit Windows, minimiert) und
