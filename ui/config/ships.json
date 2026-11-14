@@ -1,5 +1,5 @@
 {
-  "_hinweis": "Welches Schiff in welchem Theme gezeigt wird. 'themes' ordnet jedem Theme ein Schiff zu, 'names' ist die Beschriftung. Neues Schiff: SVG in ui/art/ships/<name>.svg (Koordinaten 0..300 x 0..150, Nase oben).",
+  "_hinweis": "Welches Schiff in welchem Theme gezeigt wird. 'themes' ordnet jedem Theme ein Schiff zu, 'names' ist die Beschriftung. Neues Schiff: SVG in ui/art/ships/<name>.svg (Koordinaten 0..300 x 0..150, Nase oben). Optional: \"images\": {\"cutlass\": \"art/ships/cutlass.png\"} zeigt statt der Zeichnung ein eigenes Bild (Draufsicht, Nase oben, transparenter Hintergrund).",
   "default": "cutlass",
   "themes": {
     "RSI": "aurora",
@@ -30,5 +30,6 @@
     "fury": "MIRAI FURY",
     "railen": "GATAC RAILEN",
     "p72": "KRUGER P-72"
-  }
+  },
+  "images": {}
 }

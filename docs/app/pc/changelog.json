@@ -58,5 +58,10 @@
   "version": 12,
   "name": "1.0.11",
   "notes": "Oberflaechen-Groesse einstellbar (60-120 %, Regler im Zahnrad, Strg+Mausrad). Jedes Theme zeigt das Schiff seines Herstellers (Drake: Cutlass)."
+ },
+ {
+  "version": 13,
+  "name": "1.0.12",
+  "notes": "Oberflaechen-Groesse 50-200 % mit sichtbaren Knoepfen (- 100 % +) und Umbruch auf 2 bzw. 1 Spalte bei starker Vergroesserung. Kopfzeile bricht bei knapper Breite um. Schiffsbeschriftung ohne Ueberlappung. Eigenes Schiffsbild per ships.json moeglich."
  }
 ]

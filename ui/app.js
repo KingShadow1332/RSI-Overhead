@@ -70,17 +70,23 @@ function fit() {
   const { width: w, height: ht } = CFG.app.design, st = $('#stage');
   /* Fluid: Faktor s so waehlen, dass das Design mindestens passt; die virtuelle Flaeche
      (Fenster / s) wird komplett gefuellt -> beim Aufziehen bekommen Spalten und Karten mehr Platz. */
-  const zoom = Math.min(1.2, Math.max(0.6, (get('uiscale', 100) || 100) / 100));     // einstellbare Oberflaechen-Groesse (60-120 %)
+  const zoom = Math.min(2, Math.max(0.5, (get('uiscale', 100) || 100) / 100));       // einstellbare Oberflaechen-Groesse (50-200 %)
   const s = Math.min(innerWidth / w, innerHeight / ht) * zoom;
   $('#root').classList.toggle('zoomed', zoom > 1);
+  /* Bei starker Vergroesserung wird die nutzbare Flaeche schmal -> Spalten umbrechen: wide >= 1100, mid >= 700 (2 Spalten), sonst 1 Spalte */
+  const vw = innerWidth / s, mode = vw >= 950 ? 'wide' : vw >= 640 ? 'mid' : 'narrow';
+  if ($('#root').dataset.w !== mode) { $('#root').dataset.w = mode; applyCols(); }
   st.style.transform = `scale(${s})`;
   st.style.width = innerWidth / s + 'px';
   st.style.height = innerHeight / s + 'px';
 }
 function setScale(v, quiet) {
-  v = Math.min(120, Math.max(60, Math.round(v / 5) * 5));
-  set('uiscale', v); fit();
+  v = Math.min(200, Math.max(50, Math.round(v / 5) * 5));
+  set('uiscale', v); fit(); zoomLabel();
   if (!quiet) toast('GRÖSSE ' + v + ' %');
+}
+function zoomLabel() {
+  const z = document.getElementById('zv'); if (z) z.textContent = (get('uiscale', 100) || 100) + ' %';
 }
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
@@ -353,6 +359,9 @@ const SHIPS = {};
 async function shipFor(theme) {
   const m = CFG.ships || { default: 'cutlass', themes: {}, names: {} };
   const id = m.themes[theme] || m.default;
+  /* Eigenes Bild statt Zeichnung: in config/ships.json unter "images" einen Pfad eintragen (PNG/SVG, Nase oben, transparenter Grund) */
+  const img = m.images && m.images[id];
+  if (img) return { svg: `<image href="${esc(img)}" x="70" y="2" width="160" height="146" preserveAspectRatio="xMidYMid meet"/>`, name: (m.names && m.names[id]) || '' };
   if (!SHIPS[id]) SHIPS[id] = fetch('art/ships/' + id + '.svg').then(r => (r.ok ? r.text() : '')).catch(() => '');
   return { svg: await SHIPS[id], name: (m.names && m.names[id]) || '' };
 }
@@ -577,7 +586,15 @@ function resizer(key, c) {
   z.ondblclick = () => { const s = Object.assign({}, get('sizes', {})); delete s[key]; set('sizes', s); renderPage(); };
   return z;
 }
+/* Spaltenbreiten (nur bei breiter Flaeche); bei mid/narrow bestimmt das CSS die Spaltenzahl */
+function applyCols(page) {
+  const grid = $('#grid'); if (!grid || !CFG.pages) return;
+  page = page || curPage();
+  const cw = (get('colw', {}) || {})[page.id], n = layoutFor(page).length, wide = ($('#root').dataset.w || 'wide') === 'wide';
+  grid.style.gridTemplateColumns = wide && cw && cw.length === n ? cw.map(x => x + 'fr').join(' ') : '';
+}
 function colHandles(page, grid) {
+  if (($('#root').dataset.w || 'wide') !== 'wide') return;
   const cols = [...grid.children].filter(x => x.classList.contains('col'));
   for (let i = 0; i < cols.length - 1; i++) {
     const d = h('div', 'cdiv'); d.title = 'Spaltenbreite ziehen · Doppelklick = Standard';
@@ -609,7 +626,7 @@ function renderPage() {
   grid.innerHTML = '';
   grid.classList.toggle('edit', EDIT);
   const L = layoutFor(page), cw = (get('colw', {}) || {})[page.id], sizes = get('sizes', {}) || {};
-  grid.style.gridTemplateColumns = cw && cw.length === L.length ? cw.map(x => x + 'fr').join(' ') : '';
+  applyCols(page);
   let i = 0;
   L.forEach(col => {
     const cd = h('div', 'col');
@@ -682,6 +699,13 @@ function build() {
     host.append(x);
   };
   (A.leftButtons || []).forEach(b => headerBtn(b, $('#hl')));
+  /* Sichtbare Groessen-Knoepfe: - 100 % + (Klick auf die Zahl = zurueck auf 100 %) */
+  const zc = h('span', 'zoomctl', '<button class="ib" id="zm" title="Oberfläche kleiner (Strg −)" aria-label="Kleiner">−</button><b id="zv" title="Zurück auf 100 %"></b><button class="ib" id="zp" title="Oberfläche größer (Strg +)" aria-label="Größer">+</button>');
+  $('#hb').append(zc);
+  $('#zm', zc).onclick = () => setScale(get('uiscale', 100) - 10);
+  $('#zp', zc).onclick = () => setScale(get('uiscale', 100) + 10);
+  $('#zv', zc).onclick = () => setScale(100);
+  zoomLabel();
   A.headerButtons.forEach(b => headerBtn(b, $('#hb')));
   const pl = $('#pills');
   A.pills.forEach(p => pl.append(h('span', 'pill ok', `<i></i>${esc(p.label)}`)));

@@ -209,3 +209,40 @@ nav{display:flex;gap:4px}
 .ib.wide svg{flex:none}
 /* Wenn die Oberflaeche vergroessert wird und nicht mehr passt: scrollen statt abschneiden */
 #root.zoomed #grid{overflow:auto;scrollbar-width:thin;scrollbar-color:var(--acc2) transparent}
+/* Sichtbare Groessen-Knoepfe oben rechts */
+.zoomctl{display:flex;align-items:center;gap:6px;margin-right:4px}
+.zoomctl .ib{width:34px;height:34px;font:700 20px/1 Rajdhani;color:var(--acc);padding:0}
+.zoomctl b{min-width:48px;text-align:center;font:700 12px Rajdhani;letter-spacing:1px;color:var(--text);cursor:pointer}
+.zoomctl b:hover{color:var(--acc)}
+/* Kopfzeile kompakter: alles passt bei der Mindestbreite (1240) in eine Zeile */
+#top{gap:10px}
+#brand{flex:none}
+#brand b{white-space:nowrap;font-size:18px}
+#brand i{white-space:nowrap}
+nav{min-width:0;flex:0 1 auto}
+nav .tab{padding:10px 11px;letter-spacing:2px;white-space:nowrap}
+.zoomctl{gap:4px}
+.zoomctl .ib{width:30px;height:30px;font-size:18px}
+.zoomctl b{min-width:42px}
+.ib.wide{padding:0 12px 0 10px}
+.ib.big{height:42px}
+
+/* Starke Vergroesserung: Spalten brechen um, Kopfzeile umbricht, Inhalt scrollt */
+#root[data-w=mid] #grid{grid-template-columns:1fr 1fr;align-content:start}
+#root[data-w=narrow] #grid{grid-template-columns:1fr;align-content:start}
+#root:not([data-w=wide]) #grid{overflow-y:auto;overflow-x:hidden}
+#root:not([data-w=wide]) #top{flex-wrap:wrap;row-gap:10px}
+#root:not([data-w=wide]) nav{order:10;flex:1 1 100%;flex-wrap:wrap}
+#root:not([data-w=wide]) #pills{flex-wrap:wrap}
+#root:not([data-w=wide]) #state{flex:1 1 100%}
+#root:not([data-w=wide]) .col{min-height:0}
+#root[data-w=narrow] #foot{flex-wrap:wrap}
+#root[data-w=narrow] #modal .sh-grid{grid-template-columns:1fr}
+#root[data-w=narrow] #brand b{font-size:16px}
+/* bei umgebrochenen Spalten: Karten behalten ihre natuerliche Hoehe (kein Quetschen), die Flaeche scrollt */
+#root:not([data-w=wide]) #grid{grid-auto-rows:min-content}
+#root:not([data-w=wide]) .col{min-height:auto}
+#root:not([data-w=wide]) .card,#root:not([data-w=wide]) .card.flex{flex:none}
+/* Kopfzeile darf bei knapper Breite umbrechen (statt abzuschneiden); Gruppe rechts bleibt rechts */
+#top{flex-wrap:wrap;row-gap:10px}
+#hb{margin-left:auto}
