@@ -20,8 +20,8 @@ import time
 import urllib.request
 import zipfile
 
-VERSION = 10
-VERSION_NAME = "1.0.9"
+VERSION = 11
+VERSION_NAME = "1.0.10"
 UPDATE_BASE = os.environ.get("RSI_UPDATE_URL") or "https://kingshadow1332.github.io/RSI-Overhead/app/pc/"
 
 BASE = os.path.dirname(os.path.abspath(__file__))

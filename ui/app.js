@@ -41,7 +41,10 @@ function set(id, v) {
 }
 async function refresh() {
   const s = await api('/api/state');
-  if (!s || s.ok === false) return;
+  if (!s || s.ok === false) { refresh.fails = (refresh.fails || 0) + 1; return; }
+  /* Programm war kurz weg (z. B. Neustart nach einem Update) und ist zurueck -> Seite neu laden, damit der neue Stand erscheint */
+  if (refresh.fails > 0 && LOADED) { location.reload(); return; }
+  refresh.fails = 0;
   if (!LOADED) { S.ui = s.ui || {}; LOADED = true; }
   delete s.ui; Object.assign(S, s); updateLive();
   if (s.notice) toast('AKTUALISIERT AUF VERSION ' + s.notice);

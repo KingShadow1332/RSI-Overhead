@@ -48,5 +48,10 @@
   "version": 10,
   "name": "1.0.9",
   "notes": "Einstellungen: echtes Zahnrad mit Beschriftung 'EINSTELLUNGEN' oben rechts (neben dem Layout-Stift)."
+ },
+ {
+  "version": 11,
+  "name": "1.0.10",
+  "notes": "Fix: Neustart nach Update behaelt das offene Fenster (gleicher Port, Seite laedt sich selbst neu) statt ein neues Edge-Fenster zu starten. Einstellungen als Zahnrad mit Beschriftung oben rechts."
  }
 ]

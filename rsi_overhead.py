@@ -590,14 +590,35 @@ class H(BaseHTTPRequestHandler):
 
 
 def restart_app():
-    """Nach einem Update: neue Instanz starten, altes Fenster schliessen, diese beenden."""
-    hwnd = find_window()
-    args = [a for a in sys.argv[1:] if a != "--minimized"]
-    subprocess.Popen([sys.executable, os.path.join(BASE, "rsi_overhead.py")] + args, cwd=BASE, creationflags=0x08000000)
-    if hwnd:
-        user32.PostMessageW(hwnd, 0x0010, 0, 0)          # WM_CLOSE
-    time.sleep(0.5)
+    """Nach einem Update: neue Instanz auf DEMSELBEN Port starten und diese beenden. Das offene Fenster bleibt bestehen
+    (kein neuer Edge-Start, kein Wettlauf um das Profil); die Seite merkt den Ausfall und laedt sich selbst neu."""
+    if HIDDEN.get("on") and HIDDEN.get("h"):
+        user32.ShowWindow(HIDDEN["h"], 4)                # per Hotkey versteckt? Dann wieder einblenden
+    keep, skip = [], False
+    for a in sys.argv[1:]:
+        if skip:
+            skip = False
+        elif a == "--port":
+            skip = True
+        elif a not in ("--minimized", "--reuse-window"):
+            keep.append(a)
+    subprocess.Popen([sys.executable, os.path.join(BASE, "rsi_overhead.py"), "--port", str(state["port"]), "--reuse-window"] + keep,
+                     cwd=BASE, creationflags=0x08000000)
+    time.sleep(0.6)
     os._exit(0)
+
+
+def make_server():
+    """HTTP-Server; mit --port (Neustart nach Update) wird derselbe Port wieder belegt (wartet, bis er frei ist)."""
+    want = int(sys.argv[sys.argv.index("--port") + 1]) if "--port" in sys.argv else 0
+    for _ in range(60):
+        try:
+            return ThreadingHTTPServer(("127.0.0.1", want), H)
+        except OSError:
+            if not want:
+                raise
+            time.sleep(0.25)
+    return ThreadingHTTPServer(("127.0.0.1", 0), H)
 
 
 def update_loop():
@@ -631,7 +652,7 @@ def find_edge():
 
 
 def main():
-    srv = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    srv = make_server()
     srv.daemon_threads = True
     state["port"] = srv.server_address[1]
     threading.Thread(target=srv.serve_forever, daemon=True).start()
@@ -639,6 +660,8 @@ def main():
     use_window = False
     if "--no-window" in sys.argv:
         print(url, flush=True)
+    elif "--reuse-window" in sys.argv:
+        use_window = True                              # das bestehende Fenster weiterverwenden (Neustart nach Update)
     else:
         edge, w = find_edge(), CFG.get("window", [1000, 1030])
         profile_dir = os.path.join(os.environ.get("LOCALAPPDATA", BASE), "RSIOverhead")
