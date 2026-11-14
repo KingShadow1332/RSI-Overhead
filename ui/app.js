@@ -43,11 +43,15 @@ async function refresh() {
   const s = await api('/api/state');
   if (!s || s.ok === false) { refresh.fails = (refresh.fails || 0) + 1; return; }
   /* Programm war kurz weg (z. B. Neustart nach einem Update) und ist zurueck -> Seite neu laden, damit der neue Stand erscheint */
-  if (refresh.fails > 0 && LOADED) { location.reload(); return; }
+  const keepDone = () => { try { if (s.notice) sessionStorage.setItem('rsi_done', s.notice); } catch (e) { /* ohne Speicher geht es auch */ } };
+  if (refresh.fails > 0 && LOADED) { keepDone(); location.reload(); return; }
+  /* Programm wurde ausgetauscht (auch wenn der Neustart so schnell war, dass keine Abfrage fehlschlug) -> neue Oberflaeche laden */
+  const ver = s.info && s.info.app_version;
+  if (ver) { if (!refresh.ver) refresh.ver = ver; else if (refresh.ver !== ver) { keepDone(); location.reload(); return; } }
   refresh.fails = 0;
   if (!LOADED) { S.ui = s.ui || {}; LOADED = true; }
   delete s.ui; Object.assign(S, s); updateLive();
-  if (s.notice) toast('AKTUALISIERT AUF VERSION ' + s.notice);
+  if (s.notice) { PENDING_DONE = s.notice; showUpdateDone(); }
   if (s.info && s.info.update && s.info.update.available && !refresh.told) {
     refresh.told = true;
     toast(s.info.settings && s.info.settings.autoupdate
@@ -131,7 +135,7 @@ ACTIONS['update.check'] = async btn => {
   if (btn && btn.dataset.ready) {
     toast('UPDATE WIRD INSTALLIERT …');
     const r = await api('/api/update/apply', {});
-    toast(r.ok ? 'INSTALLIERT · NEUSTART …' : (r.error || 'FEHLER'));
+    toast(r.ok ? 'UPDATE LÄUFT …' : (r.error || 'FEHLER'));    // Fortschritt zeigt die Update-Animation
     return;
   }
   toast('SUCHE NACH UPDATE …');
@@ -177,7 +181,38 @@ function bindText(b) {
     game: i.game_running ? 'LÄUFT' : 'NICHT GESTARTET', hotkey: S.hotkey ? String(S.hotkey).toUpperCase().replace(/\+/g, ' + ') : null }[b];
   return v || '—';
 }
+/* ---------- Update-Animation: Vollbild beim Laden/Installieren/Neustart, danach "aktualisiert" ---------- */
+let UPD_BUILT = false, UPD_DONE = false, PENDING_DONE = null;
+const UPD_RINGS = '<svg class="rings" viewBox="0 0 150 150" aria-hidden="true"><circle class="sp2" cx="75" cy="75" r="68" fill="none" stroke="var(--acc2)" stroke-dasharray="3 7"/>'
+  + '<circle class="sp" cx="75" cy="75" r="52" fill="none" stroke="var(--acc)" stroke-width="2" stroke-dasharray="46 14"/>';
+function updateOverlay() {
+  const m = document.getElementById('upd'); if (!m || UPD_DONE) return;
+  const u = S.info && S.info.update, ph = u && u.phase;
+  if (!ph || ph === 'idle') { if (UPD_BUILT) { m.classList.remove('on'); m.innerHTML = ''; UPD_BUILT = false; } return; }
+  if (!UPD_BUILT) {
+    UPD_BUILT = true; m.classList.add('on');
+    m.innerHTML = `<div class="box"><div class="scan"></div>${UPD_RINGS}<g class="arrow"><path d="M75 102 V52 M54 72 L75 50 L96 72" fill="none" stroke="var(--acc)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`
+      + '<h2 id="uh">UPDATE WIRD INSTALLIERT</h2><div class="uv" id="uv"></div><div class="bar"><i id="uf"></i></div><div class="pct" id="up">0 %</div>'
+      + '<div class="steps" id="us"><span>LADEN</span><span>PRÜFEN</span><span>INSTALLIEREN</span><span>NEUSTART</span></div></div>';
+  }
+  const p = u.progress || {};
+  const idx = ph === 'restart' ? 3 : p.step === 'installieren' ? 2 : ((p.step === 'pruefen' && p.pct >= 60) || p.step === 'entpacken') ? 1 : 0;
+  const pct = ph === 'restart' ? 100 : Math.max(5, Math.min(99, p.pct || 5));
+  $('#uh').textContent = ph === 'restart' ? 'NEUSTART …' : 'UPDATE WIRD INSTALLIERT';
+  $('#uv').textContent = u.latest_name ? 'VERSION ' + u.latest_name : '';
+  $('#uf').style.width = pct + '%'; $('#up').textContent = pct + ' %';
+  [...$('#us').children].forEach((s, i) => { s.className = i < idx ? 'done' : i === idx ? 'on' : ''; });
+}
+function showUpdateDone() {
+  const m = document.getElementById('upd'); if (!m || !PENDING_DONE) return;
+  const name = PENDING_DONE; PENDING_DONE = null; UPD_DONE = true; UPD_BUILT = false;
+  m.classList.add('on');
+  m.innerHTML = `<div class="box ok"><div class="scan"></div>${UPD_RINGS}<path class="chk" d="M50 78 L68 96 L102 56" fill="none" stroke="var(--acc)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    + `<h2>AKTUALISIERT</h2><div class="uv">VERSION ${esc(name)}</div></div>`;
+  setTimeout(() => { m.classList.remove('on'); m.innerHTML = ''; UPD_DONE = false; }, 4200);
+}
 function updateLive() {
+  updateOverlay();
   document.querySelectorAll('[data-bind]').forEach(e => { e.textContent = bindText(e.dataset.bind); e.title = e.textContent; });
   const run = !!(S.info && S.info.game_running);
   document.querySelectorAll('.pill').forEach(p => {
@@ -683,7 +718,7 @@ function build() {
     <div id="pills"></div><div id="grid"></div><div id="lib"></div>
     <div id="foot"><div style="display:flex;align-items:center;gap:10px"><span class="lockic">${icon('lock', 'var(--bad)')}</span><button class="bad" id="fr"></button></div>
       <div id="hz"></div><div style="width:220px"><button class="btn" id="fc"></button></div></div>
-    <div id="modal"></div><div id="picker"></div><div id="toast"></div></div>`;
+    <div id="modal"></div><div id="picker"></div><div id="upd"></div><div id="toast"></div></div>`;
   $('#brand b').textContent = A.brand; $('#brand i').textContent = A.brandSub === 'auto' ? (THEME === 'RSI' ? 'STAR CITIZEN' : THEME) : A.brandSub;
   CFG.pages.pages.forEach(p => { const t = h('button', 'tab'); t.textContent = p.title; t.dataset.p = p.id; t.onclick = () => setPage(p.id); $('nav').append(t); });
   /* leftButtons = oben links (Zahnrad), headerButtons = oben rechts; beide aus config/app.json */
@@ -714,6 +749,8 @@ function build() {
   $('#fr').textContent = A.footer.reset; $('#fr').onclick = e => runAction('reset', '', e.target);
   $('#fc').textContent = A.footer.clear; $('#fc').onclick = () => toast('NOCH NICHT VERBUNDEN');
   renderPage();
+  try { const n = sessionStorage.getItem('rsi_done'); if (n) { PENDING_DONE = n; sessionStorage.removeItem('rsi_done'); } } catch (e) { /* ok */ }
+  showUpdateDone();                                    // nach einem Update: "aktualisiert"-Animation
 }
 
 async function boot() {

@@ -39,7 +39,8 @@ kernel32 = ctypes.windll.kernel32
 DEFAULTS = {"ui": {}, "game_dir": "", "hotkey": "ctrl+shift+f9", "no_focus": True, "always_on_top": True,
             "window": [1000, 1030], "auto_update": False, "start_minimized": True}
 WIN_SIZES = [[820, 840], [1000, 1030], [1300, 1330]]          # klein / mittel / gross
-UPDATE_STATE = {"available": False, "latest_name": "", "checked": 0}
+UPDATE_STATE = {"available": False, "latest_name": "", "checked": 0, "repair": False,
+                "phase": "idle"}            # phase: idle | update (laedt/installiert) | restart (Neustart gleich) -> Update-Animation
 
 
 def auto_update_on():
@@ -136,7 +137,7 @@ def win_size_index():
 def game_info():
     info = {"version": "—", "build": "—", "channel": os.path.basename(GAME) if GAME else "—", "device": "—",
             "paths": game_paths(), "game_running": game_running(),
-            "app_version": updater.VERSION_NAME, "update": dict(UPDATE_STATE),
+            "app_version": updater.VERSION_NAME, "update": dict(UPDATE_STATE, progress=dict(updater.PROGRESS)),
             "settings": {"autostart": autostart_enabled(), "autoupdate": auto_update_on(),
                          "overlay": bool(CFG.get("no_focus", True) and CFG.get("always_on_top", True)),
                          "ontop": bool(CFG.get("always_on_top", True)), "nofocus": bool(CFG.get("no_focus", True)),
@@ -530,14 +531,12 @@ class H(BaseHTTPRequestHandler):
         if p == "/api/update/check":
             r = updater.check()
             if r.get("ok"):
-                UPDATE_STATE.update(available=r["available"], latest_name=r["latest_name"], checked=time.time())
+                UPDATE_STATE.update(available=r["available"], latest_name=r["latest_name"], repair=r.get("repair", False),
+                                    checked=time.time())
             return self._send(200, r)
         if p == "/api/update/apply":
-            r = updater.apply()
-            self._send(200, r)
-            if r.get("ok"):
-                threading.Timer(1.0, restart_app).start()
-            return
+            threading.Thread(target=do_update, args=(UPDATE_STATE.get("repair", False),), daemon=True).start()
+            return self._send(200, {"ok": True, "started": True})
         if p == "/api/quit":
             self._send(200, {"ok": True})
             threading.Timer(0.3, lambda: os._exit(0)).start()
@@ -621,6 +620,22 @@ def make_server():
     return ThreadingHTTPServer(("127.0.0.1", 0), H)
 
 
+def do_update(force=False):
+    """Update installieren MIT Animation: phase 'update' (Fortschritt kommt aus updater.PROGRESS), danach 'restart'; die Seite
+    zeigt die Animation und laedt sich nach dem Neustart selbst neu (zeigt dann 'aktualisiert')."""
+    UPDATE_STATE["phase"] = "update"
+    res = updater.apply(force=force)
+    if res.get("ok"):
+        with lock:
+            CFG["just_updated"] = res.get("name", "")
+            save_json(SETTINGS, CFG)
+        UPDATE_STATE["phase"] = "restart"
+        time.sleep(3.5)                                   # die Seite soll "Neustart ..." noch sehen
+        restart_app()
+    UPDATE_STATE.update(available=False, phase="idle", checked=time.time())   # Fehlschlag: erst in 30 Min. erneut versuchen
+    return res
+
+
 def update_loop():
     """Auto-Update: prueft beim Start (nach 8 s) und danach alle 30 Minuten. Installiert wird nur, wenn Auto-Update an ist
     UND Star Citizen nicht laeuft (der Neustart schliesst das Fenster) - sonst wird spaeter erneut versucht."""
@@ -629,17 +644,12 @@ def update_loop():
         if UPDATE_STATE["available"] or time.time() - UPDATE_STATE["checked"] > 30 * 60:
             r = updater.check()
             if r.get("ok"):
-                UPDATE_STATE.update(available=r["available"], latest_name=r["latest_name"], checked=time.time())
+                UPDATE_STATE.update(available=r["available"], latest_name=r["latest_name"], repair=r.get("repair", False),
+                                    checked=time.time())
             else:
                 UPDATE_STATE["checked"] = time.time()
         if UPDATE_STATE["available"] and auto_update_on() and not game_running():
-            res = updater.apply()
-            if res.get("ok"):
-                with lock:
-                    CFG["just_updated"] = res.get("name", "")
-                    save_json(SETTINGS, CFG)
-                restart_app()
-            UPDATE_STATE.update(available=False, checked=time.time())      # Fehlschlag: erst in 30 Min. erneut versuchen
+            do_update(UPDATE_STATE.get("repair", False))
         time.sleep(300)
 
 

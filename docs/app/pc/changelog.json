@@ -63,5 +63,10 @@
   "version": 13,
   "name": "1.0.12",
   "notes": "Oberflaechen-Groesse 50-200 % mit sichtbaren Knoepfen (- 100 % +) und Umbruch auf 2 bzw. 1 Spalte bei starker Vergroesserung. Kopfzeile bricht bei knapper Breite um. Schiffsbeschriftung ohne Ueberlappung. Eigenes Schiffsbild per ships.json moeglich."
+ },
+ {
+  "version": 14,
+  "name": "1.0.13",
+  "notes": "Update-Animation (Vollbild mit Fortschritt, danach 'aktualisiert'). Updater robuster: Versionsdatei zuletzt, Zurueckrollen bei Fehler, halbe Updates werden automatisch repariert; Seite laedt sich nach jedem Programmwechsel neu (behebt alte Oberflaeche nach Update)."
  }
 ]
