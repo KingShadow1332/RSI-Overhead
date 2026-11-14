@@ -207,3 +207,5 @@ nav{display:flex;gap:4px}
 .ib.wide{width:auto;padding:0 16px 0 12px;gap:9px;font:700 12px Rajdhani;letter-spacing:2px;color:var(--acc);white-space:nowrap}
 .ib.wide .bl{display:inline-block}
 .ib.wide svg{flex:none}
+/* Wenn die Oberflaeche vergroessert wird und nicht mehr passt: scrollen statt abschneiden */
+#root.zoomed #grid{overflow:auto;scrollbar-width:thin;scrollbar-color:var(--acc2) transparent}

@@ -1,0 +1,34 @@
+{
+  "_hinweis": "Welches Schiff in welchem Theme gezeigt wird. 'themes' ordnet jedem Theme ein Schiff zu, 'names' ist die Beschriftung. Neues Schiff: SVG in ui/art/ships/<name>.svg (Koordinaten 0..300 x 0..150, Nase oben).",
+  "default": "cutlass",
+  "themes": {
+    "RSI": "aurora",
+    "DRAKE": "cutlass",
+    "ORIGIN": "300i",
+    "MISC": "freelancer",
+    "BANU": "defender",
+    "ARGO": "mole",
+    "CRUSADER": "mercury",
+    "AEGIS": "gladius",
+    "ANVIL": "hornet",
+    "ESPERIA": "prowler",
+    "MIRAI": "fury",
+    "GATAC": "railen",
+    "KRUGER": "p72"
+  },
+  "names": {
+    "cutlass": "DRAKE CUTLASS",
+    "aurora": "RSI AURORA",
+    "300i": "ORIGIN 300I",
+    "freelancer": "MISC FREELANCER",
+    "defender": "BANU DEFENDER",
+    "mole": "ARGO MOLE",
+    "mercury": "CRUSADER MERCURY",
+    "gladius": "AEGIS GLADIUS",
+    "hornet": "ANVIL HORNET",
+    "prowler": "ESPERIA PROWLER",
+    "fury": "MIRAI FURY",
+    "railen": "GATAC RAILEN",
+    "p72": "KRUGER P-72"
+  }
+}

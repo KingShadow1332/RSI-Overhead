@@ -70,10 +70,17 @@ function fit() {
   const { width: w, height: ht } = CFG.app.design, st = $('#stage');
   /* Fluid: Faktor s so waehlen, dass das Design mindestens passt; die virtuelle Flaeche
      (Fenster / s) wird komplett gefuellt -> beim Aufziehen bekommen Spalten und Karten mehr Platz. */
-  const s = Math.min(innerWidth / w, innerHeight / ht);
+  const zoom = Math.min(1.2, Math.max(0.6, (get('uiscale', 100) || 100) / 100));     // einstellbare Oberflaechen-Groesse (60-120 %)
+  const s = Math.min(innerWidth / w, innerHeight / ht) * zoom;
+  $('#root').classList.toggle('zoomed', zoom > 1);
   st.style.transform = `scale(${s})`;
   st.style.width = innerWidth / s + 'px';
   st.style.height = innerHeight / s + 'px';
+}
+function setScale(v, quiet) {
+  v = Math.min(120, Math.max(60, Math.round(v / 5) * 5));
+  set('uiscale', v); fit();
+  if (!quiet) toast('GRÖSSE ' + v + ' %');
 }
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
@@ -235,6 +242,12 @@ const RENDER = {
     return w;
   },
   range(c, id) {
+    if (c.apply === 'uiscale') {                      // Oberflaechen-Groesse (Zoom) - wirkt sofort
+      const v = get('uiscale', 100);
+      const w = h('div', 'field', `<span class="lbl">${esc(c.label)} <b class="v">${v} %</b></span><input class="rng" type="range" min="${c.min}" max="${c.max}" step="5" value="${v}" aria-label="${esc(c.label)}">`);
+      $('input', w).oninput = e => { setScale(+e.target.value, true); $('.v', w).textContent = e.target.value + ' %'; };
+      return w;
+    }
     const sid = id + '/' + slug(c.label);
     const w = h('div', 'field', `<span class="lbl">${esc(c.label)}</span><input class="rng" type="range" min="${c.min}" max="${c.max}" value="${get(sid, c.value)}" aria-label="${esc(c.label)}">`);
     $('input', w).oninput = e => set(sid, +e.target.value);
@@ -335,9 +348,22 @@ function editableKv(c) {
   return w;
 }
 
+/* Jedes Theme zeigt das Schiff "seines" Herstellers (config/ships.json); Szenen enthalten nur Platzhalter. */
+const SHIPS = {};
+async function shipFor(theme) {
+  const m = CFG.ships || { default: 'cutlass', themes: {}, names: {} };
+  const id = m.themes[theme] || m.default;
+  if (!SHIPS[id]) SHIPS[id] = fetch('art/ships/' + id + '.svg').then(r => (r.ok ? r.text() : '')).catch(() => '');
+  return { svg: await SHIPS[id], name: (m.names && m.names[id]) || '' };
+}
 async function loadArt(src, host) {
   if (!ART[src]) ART[src] = fetch('art/' + src + '.svg').then(r => r.text()).catch(() => '');
-  host.innerHTML = recolor(await ART[src]);
+  let svg = await ART[src];
+  if (svg.includes('<!--SHIP')) {
+    const sh = await shipFor(THEME);
+    svg = svg.replace('<!--SHIP-->', () => sh.svg).replace('<!--SHIPNAME-->', () => esc(sh.name));
+  }
+  host.innerHTML = recolor(svg);
 }
 
 /* ---------- Seiten ---------- */
@@ -668,13 +694,19 @@ function build() {
 
 async function boot() {
   const j = u => fetch(u).then(r => r.json());
-  [CFG.app, CFG.pages, CFG.themes, CFG.keys, CFG.settings] = await Promise.all([j('config/app.json'), j('config/pages.json'), j('config/themes.json'), j('config/keybinds.json'), j('config/settings.json')]);
+  [CFG.app, CFG.pages, CFG.themes, CFG.keys, CFG.settings, CFG.ships] = await Promise.all([j('config/app.json'), j('config/pages.json'), j('config/themes.json'), j('config/keybinds.json'), j('config/settings.json'),
+    j('config/ships.json').catch(() => ({ default: 'cutlass', themes: {}, names: {} }))]);
   buildRegistry();
   await refresh();
   applyTheme(get('theme', 'RSI'));
   PAGE = get('page', CFG.pages.pages[0].id);
   build(); fit();
   addEventListener('resize', fit);
+  /* Groesse der Oberflaeche: Strg + Mausrad oder Strg + / Strg - / Strg 0 (Standard) */
+  addEventListener('wheel', e => { if (e.ctrlKey) { e.preventDefault(); setScale(get('uiscale', 100) + (e.deltaY < 0 ? 5 : -5)); } }, { passive: false });
+  addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && ['+', '=', '-', '0'].includes(e.key)) { e.preventDefault(); setScale(e.key === '0' ? 100 : get('uiscale', 100) + (e.key === '-' ? -5 : 5)); }
+  });
   addEventListener('keydown', e => { if (e.key === 'Escape') { if (PICK) closePicker(); else if (MODAL) closeSettings(); } });
   addEventListener('pagehide', () => navigator.sendBeacon('/api/bye', '{}'));
   setInterval(refresh, 1000);

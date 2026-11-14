@@ -53,5 +53,10 @@
   "version": 11,
   "name": "1.0.10",
   "notes": "Fix: Neustart nach Update behaelt das offene Fenster (gleicher Port, Seite laedt sich selbst neu) statt ein neues Edge-Fenster zu starten. Einstellungen als Zahnrad mit Beschriftung oben rechts."
+ },
+ {
+  "version": 12,
+  "name": "1.0.11",
+  "notes": "Oberflaechen-Groesse einstellbar (60-120 %, Regler im Zahnrad, Strg+Mausrad). Jedes Theme zeigt das Schiff seines Herstellers (Drake: Cutlass)."
  }
 ]
