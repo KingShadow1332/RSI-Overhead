@@ -203,3 +203,7 @@ nav{display:flex;gap:4px}
 .sq .ix{position:absolute;top:-8px;right:-8px}
 .card .addi{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;padding:8px 12px;border:1px dashed var(--acc2);border-radius:8px;color:var(--acc);font:700 11px Rajdhani;letter-spacing:2px}
 .card .addi:hover{border-color:var(--acc);background:var(--acc-a)}
+/* Zahnrad mit Beschriftung oben links */
+.ib.wide{width:auto;padding:0 16px 0 12px;gap:9px;font:700 12px Rajdhani;letter-spacing:2px;color:var(--acc);white-space:nowrap}
+.ib.wide .bl{display:inline-block}
+.ib.wide svg{flex:none}

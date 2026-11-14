@@ -29,15 +29,15 @@
     "ready": "BEREIT ZUM START",
     "running": "STAR CITIZEN LÄUFT"
   },
-  "leftButtons": [
+  "leftButtons": [],
+  "headerButtons": [
     {
       "icon": "gear",
       "title": "Einstellungen (Auto-Start, Hotkey, Fenster, Update …)",
       "action": "settings",
+      "label": "EINSTELLUNGEN",
       "big": true
-    }
-  ],
-  "headerButtons": [
+    },
     {
       "icon": "edit",
       "title": "Layout bearbeiten (Module)",

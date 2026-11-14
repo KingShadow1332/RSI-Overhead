@@ -9,7 +9,7 @@ traegt es unter "Apps & Features" ein (Deinstallation dort oder ueber `uninstall
 Einstellungen und Tastenprofile bleiben erhalten. Ohne Fenster: Optionen siehe Kopf von `Setup.py`.
 
 Autostart, Overlay (immer oben + kein Fokusklau), Auto-Update, Theme, Spielordner, Layout und "Launcher beenden"
-stehen im Einstellungs-Fenster (Zahnrad oben links, Inhalt: `ui/config/settings.json`).
+stehen im Einstellungs-Fenster (Zahnrad "Einstellungen" oben rechts, Inhalt: `ui/config/settings.json`).
 
 ## Ohne Installation starten
 `RSI Overhead.bat` (Fenster schliessen = beenden).

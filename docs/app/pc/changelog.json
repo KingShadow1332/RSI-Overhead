@@ -43,5 +43,10 @@
   "version": 9,
   "name": "1.0.8",
   "notes": "Version wird neben dem Namen angezeigt (z. B. STAR CITIZEN - V1.0.8), damit man sieht, welcher Stand laeuft."
+ },
+ {
+  "version": 10,
+  "name": "1.0.9",
+  "notes": "Einstellungen: echtes Zahnrad mit Beschriftung 'EINSTELLUNGEN' oben rechts (neben dem Layout-Stift)."
  }
 ]

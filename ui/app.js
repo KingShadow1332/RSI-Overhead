@@ -15,7 +15,7 @@ const slug = s => String(s).toLowerCase().replace(/[^a-z0-9äöü]+/g, '-').repl
 const DRAKE_HEX = { '0A0907': 'bg', '141210': 'panel', '1D1A15': 'panel2', '3B352B': 'line', 'F58A1F': 'acc', '9A5410': 'acc2',
   'EFE9DD': 'text', 'A39A88': 'muted', '140A02': 'onacc', 'F2D14B': 'warn', 'F0544A': 'bad' };
 const ICONS = {
-  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
   wifi: '<path d="M3 9a14 14 0 0 1 18 0M6 12.5a9.5 9.5 0 0 1 12 0M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="19" r="1"/>',
   shield: '<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/>',
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
@@ -642,7 +642,8 @@ function build() {
   CFG.pages.pages.forEach(p => { const t = h('button', 'tab'); t.textContent = p.title; t.dataset.p = p.id; t.onclick = () => setPage(p.id); $('nav').append(t); });
   /* leftButtons = oben links (Zahnrad), headerButtons = oben rechts; beide aus config/app.json */
   const headerBtn = (b, host) => {
-    const x = h('button', 'ib' + (b.big ? ' big' : ''), icon(b.icon)); x.title = b.title; x.setAttribute('aria-label', b.title);
+    const x = h('button', 'ib' + (b.big ? ' big' : '') + (b.label ? ' wide' : ''),
+      icon(b.icon) + (b.label ? `<span class="bl">${esc(b.label)}</span>` : '')); x.title = b.title; x.setAttribute('aria-label', b.title);
     if (b.action) x.dataset.act = b.action;
     x.onclick = () => {
       if (b.action === 'edit') setEdit(!EDIT);
