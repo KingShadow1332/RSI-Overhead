@@ -9,3 +9,6 @@ __pycache__/
 *.pyc
 .vscode/
 .idea/
+
+# Original-Logo (gross, nur lokal)
+design/Logo-original.png
