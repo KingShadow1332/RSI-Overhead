@@ -8,5 +8,10 @@
   "version": 2,
   "name": "1.0.1",
   "notes": "Einstellungs-Fenster (Zahnrad): Auto-Start, Overlay, Auto-Update, Theme, Spielordner, Layout. Installation standardmaessig in Dokumente."
+ },
+ {
+  "version": 3,
+  "name": "1.0.2",
+  "notes": "Themes fuer weitere Hersteller (Crusader, Aegis, Anvil, Esperia, Mirai, Gatac, Kruger). Tote Karten entfernt; Auto-Start und Co. nur noch im Einstellungs-Fenster."
  }
 ]

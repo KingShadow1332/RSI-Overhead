@@ -7,7 +7,7 @@
     [
      {
       "title": "SYSTEM-STATUS",
-      "flex": false,
+      "flex": true,
       "controls": [
        {
         "type": "kv",
@@ -38,80 +38,6 @@
         "label": "BUILD",
         "value": "—",
         "bind": "build"
-       }
-      ]
-     },
-     {
-      "title": "UMGEBUNG",
-      "flex": false,
-      "controls": [
-       {
-        "type": "seg",
-        "options": [
-         "LIVE",
-         "PTU",
-         "EPTU"
-        ],
-        "value": 0
-       },
-       {
-        "type": "kv",
-        "label": "INSTALLIERT",
-        "value": "[VERSION]",
-        "bind": "version"
-       },
-       {
-        "type": "btn",
-        "label": "KANAL WECHSELN"
-       }
-      ]
-     },
-     {
-      "title": "SPIELMODUS",
-      "flex": false,
-      "controls": [
-       {
-        "type": "chips",
-        "options": [
-         "UNIVERSUM",
-         "ARENA COMMANDER",
-         "STAR MARINE"
-        ],
-        "value": 0
-       },
-       {
-        "type": "toggles",
-        "items": [
-         {
-          "label": "Hangar zuerst",
-          "on": false
-         }
-        ],
-        "grid": false
-       }
-      ]
-     },
-     {
-      "title": "DATEIEN",
-      "flex": true,
-      "controls": [
-       {
-        "type": "toggles",
-        "items": [
-         {
-          "label": "Schnell-Prüfung",
-          "on": true
-         },
-         {
-          "label": "Logs",
-          "on": false
-         }
-        ],
-        "grid": false
-       },
-       {
-        "type": "btn",
-        "label": "DATEIEN PRÜFEN"
        }
       ]
      }
@@ -145,23 +71,8 @@
       ]
      },
      {
-      "title": "ORDNER",
-      "flex": false,
-      "controls": [
-       {
-        "type": "btnrow",
-        "items": [
-         "SPIEL",
-         "LOGS",
-         "SCREENS",
-         "CONFIG"
-        ]
-       }
-      ]
-     },
-     {
       "title": "SCHNELLZUGRIFF",
-      "flex": true,
+      "flex": false,
       "controls": [
        {
         "type": "btnrow",
@@ -189,67 +100,17 @@
     ],
     [
      {
-      "title": "SERVER",
-      "flex": false,
-      "controls": [
-       {
-        "type": "seg",
-        "options": [
-         "EU",
-         "US",
-         "AUS"
-        ],
-        "value": 0
-       },
-       {
-        "type": "kv",
-        "label": "PING",
-        "value": "[PING]",
-        "bind": "ping"
-       },
-       {
-        "type": "toggles",
-        "items": [
-         {
-          "label": "Auto-Wahl",
-          "on": true
-         }
-        ],
-        "grid": false
-       }
-      ]
-     },
-     {
-      "title": "SYSTEM",
+      "title": "ORDNER",
       "flex": true,
       "controls": [
        {
-        "type": "toggles",
+        "type": "btnrow",
         "items": [
-         {
-          "label": "Vollbild",
-          "on": true
-         },
-         {
-          "label": "Auto-Start",
-          "on": false,
-          "apply": "autostart"
-         },
-         {
-          "label": "Overlay",
-          "on": true,
-          "apply": "overlay"
-         },
-         {
-          "label": "HDR",
-          "on": false
-         }
-        ],
-        "grid": true
-       },
-       {
-        "type": "btn",
-        "label": "LAUNCHER BEENDEN"
+         "SPIEL",
+         "LOGS",
+         "SCREENS",
+         "CONFIG"
+        ]
        }
       ]
      }
@@ -1456,35 +1317,6 @@
    "columns": [
     [
      {
-      "title": "ALLGEMEIN",
-      "flex": false,
-      "controls": [
-       {
-        "type": "toggles",
-        "items": [
-         {
-          "label": "Vollbild",
-          "on": true
-         },
-         {
-          "label": "Auto-Start",
-          "on": false,
-          "apply": "autostart"
-         },
-         {
-          "label": "Minimieren",
-          "on": true
-         },
-         {
-          "label": "Hinweise",
-          "on": true
-         }
-        ],
-        "grid": true
-       }
-      ]
-     },
-     {
       "title": "SPRACHE",
       "flex": false,
       "controls": [
@@ -1605,7 +1437,14 @@
          "ORIGIN",
          "MISC",
          "BANU",
-         "ARGO"
+         "ARGO",
+         "CRUSADER",
+         "AEGIS",
+         "ANVIL",
+         "ESPERIA",
+         "MIRAI",
+         "GATAC",
+         "KRUGER"
         ],
         "value": 0,
         "id": "theme",
