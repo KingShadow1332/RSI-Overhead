@@ -28,5 +28,10 @@
   "version": 6,
   "name": "1.0.5",
   "notes": "Module frei verschieben (Ziehen am Griff), entfernen und ueber Auswahl hinzufuegen. Neue Karte 'Module' im Einstellungs-Fenster."
+ },
+ {
+  "version": 7,
+  "name": "1.0.6",
+  "notes": "Auto-Update standardmaessig an (alle 30 Min., nie waehrend Star Citizen). Module: Hoehe/Spaltenbreite ziehen, Tasten und Buttons pro Modul hinzufuegen/entfernen."
  }
 ]

@@ -40,6 +40,11 @@ DEFAULTS = {"ui": {}, "game_dir": "", "hotkey": "ctrl+shift+f9", "no_focus": Tru
             "window": [1000, 1030], "auto_update": False, "start_minimized": True}
 WIN_SIZES = [[820, 840], [1000, 1030], [1300, 1330]]          # klein / mittel / gross
 UPDATE_STATE = {"available": False, "latest_name": "", "checked": 0}
+
+
+def auto_update_on():
+    """Auto-Update ist standardmaessig AN; erst wenn der Nutzer den Schalter bedient hat, zaehlt dessen Wert."""
+    return bool(CFG.get("auto_update")) if CFG.get("auto_update_set") else True
 lock = threading.Lock()
 STATUS_URL = "https://status.robertsspaceindustries.com"
 
@@ -60,6 +65,9 @@ def save_json(path, data):
 
 
 CFG = {**DEFAULTS, **load_json(SETTINGS, {})}
+NOTICE = {"name": CFG.pop("just_updated", None)}       # einmalige Meldung "aktualisiert auf ..." nach einem Auto-Update
+if NOTICE["name"] is not None:
+    save_json(SETTINGS, CFG)
 
 # ------------------------------------------------------------ Autostart (Registry, pro Benutzer)
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
@@ -129,7 +137,7 @@ def game_info():
     info = {"version": "—", "build": "—", "channel": os.path.basename(GAME) if GAME else "—", "device": "—",
             "paths": game_paths(), "game_running": game_running(),
             "app_version": updater.VERSION_NAME, "update": dict(UPDATE_STATE),
-            "settings": {"autostart": autostart_enabled(), "autoupdate": bool(CFG.get("auto_update", False)),
+            "settings": {"autostart": autostart_enabled(), "autoupdate": auto_update_on(),
                          "overlay": bool(CFG.get("no_focus", True) and CFG.get("always_on_top", True)),
                          "ontop": bool(CFG.get("always_on_top", True)), "nofocus": bool(CFG.get("no_focus", True)),
                          "startmin": bool(CFG.get("start_minimized", True)), "winsize": win_size_index()}}
@@ -427,7 +435,8 @@ class H(BaseHTTPRequestHandler):
         if path == "/api/state":
             state["last_seen"], state["seen"] = time.time(), True
             return self._send(200, {"ok": True, "ui": CFG["ui"], "stats": STATS.snapshot(), "info": game_info(),
-                                    "keys": keys_user(), "rebinds": read_rebinds(), "hotkey": CFG.get("hotkey")})
+                                    "keys": keys_user(), "rebinds": read_rebinds(), "hotkey": CFG.get("hotkey"),
+                                    "notice": NOTICE.pop("name", None)})
         rel = "index.html" if path == "/" else path.lstrip("/")
         full = os.path.normpath(os.path.join(UI, rel))
         if not full.startswith(UI + os.sep) or not os.path.isfile(full):
@@ -498,6 +507,8 @@ class H(BaseHTTPRequestHandler):
                 with lock:
                     for n in names:
                         CFG[n] = val
+                    if key == "autoupdate":
+                        CFG["auto_update_set"] = True          # ab jetzt zaehlt die Wahl des Nutzers (Standard ist AN)
                     save_json(SETTINGS, CFG)
                 if key == "startmin" and autostart_enabled():
                     try:
@@ -590,16 +601,25 @@ def restart_app():
 
 
 def update_loop():
-    """Prueft beim Start (nach 8 s) und danach alle 6 Stunden; bei aktivem Auto-Update wird gleich installiert."""
+    """Auto-Update: prueft beim Start (nach 8 s) und danach alle 30 Minuten. Installiert wird nur, wenn Auto-Update an ist
+    UND Star Citizen nicht laeuft (der Neustart schliesst das Fenster) - sonst wird spaeter erneut versucht."""
     time.sleep(8)
     while True:
-        r = updater.check()
-        if r.get("ok"):
-            UPDATE_STATE.update(available=r["available"], latest_name=r["latest_name"], checked=time.time())
-            if r["available"] and CFG.get("auto_update"):
-                if updater.apply().get("ok"):
-                    restart_app()
-        time.sleep(6 * 3600)
+        if UPDATE_STATE["available"] or time.time() - UPDATE_STATE["checked"] > 30 * 60:
+            r = updater.check()
+            if r.get("ok"):
+                UPDATE_STATE.update(available=r["available"], latest_name=r["latest_name"], checked=time.time())
+            else:
+                UPDATE_STATE["checked"] = time.time()
+        if UPDATE_STATE["available"] and auto_update_on() and not game_running():
+            res = updater.apply()
+            if res.get("ok"):
+                with lock:
+                    CFG["just_updated"] = res.get("name", "")
+                    save_json(SETTINGS, CFG)
+                restart_app()
+            UPDATE_STATE.update(available=False, checked=time.time())      # Fehlschlag: erst in 30 Min. erneut versuchen
+        time.sleep(300)
 
 
 def find_edge():

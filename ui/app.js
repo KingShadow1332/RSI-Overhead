@@ -44,8 +44,12 @@ async function refresh() {
   if (!s || s.ok === false) return;
   if (!LOADED) { S.ui = s.ui || {}; LOADED = true; }
   delete s.ui; Object.assign(S, s); updateLive();
+  if (s.notice) toast('AKTUALISIERT AUF VERSION ' + s.notice);
   if (s.info && s.info.update && s.info.update.available && !refresh.told) {
-    refresh.told = true; toast('UPDATE ' + s.info.update.latest_name + ' VERFÜGBAR · SYSTEM › NACH UPDATE SUCHEN');
+    refresh.told = true;
+    toast(s.info.settings && s.info.settings.autoupdate
+      ? 'UPDATE ' + s.info.update.latest_name + ' WIRD AUTOMATISCH INSTALLIERT' + (s.info.game_running ? ' (NACH DEM SPIEL)' : '')
+      : 'UPDATE ' + s.info.update.latest_name + ' VERFÜGBAR · ZAHNRAD › NACH UPDATE SUCHEN');
   }
 }
 
@@ -259,7 +263,7 @@ const RENDER = {
   },
   btnrow(c) {
     const w = h('div', 'row');
-    c.items.forEach(l => { const b = h('button', 'sq'); b.textContent = l; b.onclick = () => runAction(null, l, b); w.append(b); });
+    c.items.forEach(l => { const b = h('button', 'sq'); b.textContent = l; b.dataset.label = l; b.onclick = () => runAction(null, l, b); w.append(b); });
     return w;
   },
   start() {
@@ -328,7 +332,7 @@ async function loadArt(src, host) {
 }
 
 /* ---------- Seiten ---------- */
-function renderCard(card, pid, idx) {
+function renderCard(card, pid, idx, key) {
   const title = card.title.startsWith('THEME') ? 'THEME · ' + THEME
     : card.title.startsWith('TASTENBELEGUNG') ? 'TASTENBELEGUNG · ' + profile() : card.title;
   const c = h('section', 'card' + (card.flex ? ' flex' : ''),
@@ -336,7 +340,7 @@ function renderCard(card, pid, idx) {
   $('.t', c).textContent = title;
   c.style.animationDelay = (idx * 0.035) + 's';
   const base = pid + '/' + slug(card.title), n = {};
-  card.controls.forEach(ct => {
+  cardControls(card, key).forEach(ct => {
     n[ct.type] = (n[ct.type] || 0) + 1;
     const f = RENDER[ct.type];
     if (f) c.append(f(ct, ct.id || `${base}/${ct.type}${n[ct.type]}`));
@@ -432,7 +436,11 @@ function renderLib(page) {
 }
 const curPage = () => CFG.pages.pages.find(p => p.id === PAGE) || CFG.pages.pages[0];
 function resetLayout() {
-  const all = Object.assign({}, get('layout', {})); delete all[curPage().id]; set('layout', all); renderPage(); toast('LAYOUT ZURÜCKGESETZT');
+  /* Layout, Spaltenbreiten, Modulhoehen und eigene Tasten/Buttons dieser Seite zuruecksetzen */
+  const page = curPage(), pid = page.id, keys = new Set([...layoutFor(page).flat(), ...page.columns.flat().map(c => cardKey(pid, c))]);
+  const drop = (name, test) => { const o = Object.assign({}, get(name, {})); Object.keys(o).forEach(k => { if (test(k)) delete o[k]; }); set(name, o); };
+  drop('layout', k => k === pid); drop('colw', k => k === pid); drop('sizes', k => keys.has(k)); drop('items', k => keys.has(k));
+  renderPage(); toast('LAYOUT ZURÜCKGESETZT');
 }
 
 /* Modul-Auswahl: alle Module (nach Seite gruppiert), die auf dieser Seite gerade nicht sichtbar sind. */
@@ -441,6 +449,7 @@ function renderPicker() {
   const m = $('#picker'); if (!m) return;
   m.style.display = PICK ? 'flex' : 'none';
   if (!PICK) { m.innerHTML = ''; return; }
+  if (PICK === 'item') return renderItemPicker(m);
   const page = curPage(), used = new Set(layoutFor(page).flat());
   m.innerHTML = '<div class="sheet"><div class="sh-head"><span class="sh-title">MODUL HINZUFÜGEN</span><button class="ib sh-close" aria-label="Schließen" title="Schließen (Esc)">✕</button></div><div class="pk"></div></div>';
   $('.sh-close', m).onclick = closePicker;
@@ -468,23 +477,119 @@ function openPicker() { PICK = true; renderPicker(); }
 function closePicker() { PICK = false; renderPicker(); }
 let EDIT = false;
 
+/* ---------- Pro Modul: Tasten/Buttons hinzufuegen oder entfernen (nur Karten mit ausschliesslich Tasten ODER Buttons) ---------- */
+function itemKind(card) {
+  const t = card.controls.map(c => c.type);
+  if (t.length && t.every(x => x === 'key')) return 'keys';
+  if (t.length && t.every(x => x === 'btn' || x === 'btnrow')) return 'buttons';
+  return null;
+}
+const defaultItems = card => itemKind(card) === 'keys' ? card.controls.map(c => c.label)
+  : card.controls.flatMap(c => c.type === 'btnrow' ? c.items : [c.label]);
+const itemsFor = (key, card) => ((get('items', {}) || {})[key]) || defaultItems(card);
+function setItems(key, list) { set('items', Object.assign({}, get('items', {}), { [key]: list })); renderPage(); }
+function cardControls(card, key) {
+  const kind = itemKind(card), ov = key && kind ? (get('items', {}) || {})[key] : null;
+  if (!ov) return card.controls;
+  if (kind === 'keys') return ov.map(l => ({ type: 'key', label: l, placeholder: '[TASTE]' }));
+  const rows = [];
+  for (let i = 0; i < ov.length; i += 2) rows.push({ type: 'btnrow', items: ov.slice(i, i + 2) });
+  return rows;
+}
+function decorateItems(c, key, card) {
+  const kind = itemKind(card); if (!kind) return;
+  const rm = label => setItems(key, itemsFor(key, card).filter(l => l !== label));
+  if (kind === 'keys') c.querySelectorAll('.keyrow').forEach(r => {
+    const label = $('span', r).textContent, x = h('button', 'ix', '✕'); x.title = 'Taste entfernen';
+    x.onclick = e => { e.stopPropagation(); rm(label); }; r.append(x);
+  });
+  else c.querySelectorAll('.sq').forEach(b => {
+    const x = h('i', 'ix', '✕'); x.title = 'Button entfernen';
+    x.onclick = e => { e.stopPropagation(); e.preventDefault(); rm(b.dataset.label); }; b.append(x);
+  });
+  const add = h('button', 'addi', kind === 'keys' ? '+ TASTE HINZUFÜGEN' : '+ BUTTON HINZUFÜGEN');
+  add.onclick = () => openItemPicker(key, card, kind); c.append(add);
+}
+let PICKCTX = null;
+function openItemPicker(key, card, kind) { PICK = 'item'; PICKCTX = { key, card, kind }; renderPicker(); }
+function renderItemPicker(m) {
+  const { key, card, kind } = PICKCTX, have = new Set(itemsFor(key, card));
+  const pool = kind === 'keys' ? CFG.keys.actions.map(a => a.label)
+    : Object.keys(CFG.app.labelActions).filter(l => !['STANDARD ZURÜCKSETZEN', 'LAUNCHER BEENDEN'].includes(l));
+  const free = [...new Set(pool)].filter(l => !have.has(l));
+  m.innerHTML = `<div class="sheet"><div class="sh-head"><span class="sh-title">${kind === 'keys' ? 'TASTE' : 'BUTTON'} HINZUFÜGEN</span><button class="ib sh-close" aria-label="Schließen" title="Schließen (Esc)">✕</button></div><div class="pk"></div></div>`;
+  $('.sh-close', m).onclick = closePicker;
+  m.onclick = e => { if (e.target === m) closePicker(); };
+  const pk = $('.pk', m), row = h('div', 'chips');
+  free.forEach(l => {
+    const b = h('button', 'mod'); b.textContent = '+ ' + l;
+    b.onclick = () => { setItems(key, itemsFor(key, card).concat(l)); toast('HINZUGEFÜGT: ' + l); };
+    row.append(b);
+  });
+  pk.append(free.length ? row : h('div', 'lbl', 'Es gibt nichts mehr zum Hinzufügen.'));
+}
+
+/* ---------- Groesse: Hoehe pro Modul (unten ziehen), Breite pro Spalte (Trennlinie ziehen) ---------- */
+function resizer(key, c) {
+  const z = h('div', 'rz'); z.title = 'Höhe ziehen · Doppelklick = automatisch';
+  z.onpointerdown = e => {
+    e.preventDefault(); try { z.setPointerCapture(e.pointerId); } catch (x) { /* ohne Capture geht es auch */ }
+    const s = c.getBoundingClientRect().height / c.offsetHeight || 1, y0 = e.clientY, h0 = c.offsetHeight;
+    c.style.flex = 'none'; c.dataset.fixed = '1';
+    z.onpointermove = ev => { c.style.height = Math.max(70, Math.round(h0 + (ev.clientY - y0) / s)) + 'px'; };
+    z.onpointerup = () => { z.onpointermove = z.onpointerup = null; set('sizes', Object.assign({}, get('sizes', {}), { [key]: c.offsetHeight })); };
+  };
+  z.ondblclick = () => { const s = Object.assign({}, get('sizes', {})); delete s[key]; set('sizes', s); renderPage(); };
+  return z;
+}
+function colHandles(page, grid) {
+  const cols = [...grid.children].filter(x => x.classList.contains('col'));
+  for (let i = 0; i < cols.length - 1; i++) {
+    const d = h('div', 'cdiv'); d.title = 'Spaltenbreite ziehen · Doppelklick = Standard';
+    d.style.left = ((cols[i].offsetLeft + cols[i].offsetWidth + cols[i + 1].offsetLeft) / 2) + 'px';
+    d.onpointerdown = e => {
+      e.preventDefault(); try { d.setPointerCapture(e.pointerId); } catch (x) { /* ohne Capture geht es auch */ }
+      const s = grid.getBoundingClientRect().width / grid.offsetWidth || 1, x0 = e.clientX, w0 = cols.map(c => c.offsetWidth), x00 = parseFloat(d.style.left);
+      let w = w0.slice();
+      d.onpointermove = ev => {
+        const dx = (ev.clientX - x0) / s, pair = w0[i] + w0[i + 1], a = Math.min(pair - 160, Math.max(160, w0[i] + dx));
+        w = w0.slice(); w[i] = a; w[i + 1] = pair - a;
+        grid.style.gridTemplateColumns = w.map(v => v + 'fr').join(' ');
+        d.style.left = (x00 + (a - w0[i])) + 'px';
+      };
+      d.onpointerup = () => {
+        d.onpointermove = d.onpointerup = null;
+        const tot = w.reduce((p, v) => p + v, 0);
+        set('colw', Object.assign({}, get('colw', {}), { [page.id]: w.map(v => Math.round(v / tot * w.length * 100) / 100) }));
+        renderPage();
+      };
+    };
+    d.ondblclick = () => { const o = Object.assign({}, get('colw', {})); delete o[page.id]; set('colw', o); renderPage(); };
+    grid.append(d);
+  }
+}
+
 function renderPage() {
   const page = CFG.pages.pages.find(p => p.id === PAGE) || CFG.pages.pages[0], grid = $('#grid');
   grid.innerHTML = '';
   grid.classList.toggle('edit', EDIT);
+  const L = layoutFor(page), cw = (get('colw', {}) || {})[page.id], sizes = get('sizes', {}) || {};
+  grid.style.gridTemplateColumns = cw && cw.length === L.length ? cw.map(x => x + 'fr').join(' ') : '';
   let i = 0;
-  layoutFor(page).forEach(col => {
+  L.forEach(col => {
     const cd = h('div', 'col');
     col.forEach(key => {
       const m = REG[key]; if (!m) return;
-      const c = renderCard(m.card, m.pid, i++);
-      if (EDIT) c.append(toolbar(page, key, c));
+      const c = renderCard(m.card, m.pid, i++, key);
+      if (sizes[key]) { c.style.flex = 'none'; c.style.height = sizes[key] + 'px'; c.dataset.fixed = '1'; }
+      if (EDIT) { c.append(toolbar(page, key, c)); decorateItems(c, key, m.card); c.append(resizer(key, c)); }
       cd.append(c);
     });
-    if (cd.children.length && !cd.querySelector('.flex')) cd.lastElementChild.classList.add('flex');   // Resthoehe auffuellen
+    const last = cd.lastElementChild;
+    if (last && !cd.querySelector('.flex') && !last.dataset.fixed) last.classList.add('flex');   // Resthoehe auffuellen
     grid.append(cd);
   });
-  if (EDIT) enableDnD(page, grid);
+  if (EDIT) { enableDnD(page, grid); colHandles(page, grid); }
   if (PICK) renderPicker();
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === page.id));
   renderLib(page);

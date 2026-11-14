@@ -15,9 +15,11 @@ stehen im Einstellungs-Fenster (Zahnrad oben links, Inhalt: `ui/config/settings.
 `RSI Overhead.bat` (Fenster schliessen = beenden).
 
 ## Updates (wie bei A.R.I, ueber GitHub Pages)
-* **Im Programm:** SYSTEM › Launcher-Update › "Nach Update suchen". Gibt es eins, wird der Button zu
-  "Update installieren" (Download, SHA-256-Pruefung, Backup in `backups/`, Neustart). "Auto-Update" installiert
-  neue Versionen von selbst (Standard: aus). Einstellungen und Tastenprofile werden nie ueberschrieben.
+* **Automatisch (Standard: an):** Das Programm prueft beim Start und danach alle 30 Minuten und installiert neue
+  Versionen selbst (Download, SHA-256-Pruefung, Backup in `backups/`, Neustart mit Meldung) - aber nie, waehrend
+  Star Citizen laeuft; dann wartet es bis zum Spielende. Abschalten: Zahnrad › "Auto-Update".
+* **Von Hand:** Zahnrad › Update › "Nach Update suchen"; ist eins da, wird der Button zu "Update installieren".
+  Einstellungen und Tastenprofile werden nie ueberschrieben.
 * **Neue Version veroeffentlichen** (im Repo-Ordner):
   ```
   python tools/release.py "Was ist neu"            # Version +1, baut docs/app/pc/ (Zip, version.json, changelog.json)
@@ -44,7 +46,9 @@ ui/
 ## Module (Karten) umbauen
 * **Im Programm:** Stift-Symbol oben rechts (oder Zahnrad › Module › Layout bearbeiten) = Layout-Modus. Module am Griff ⠿
   mit der Maus in jede Spalte und Position ziehen (oder mit ◀ ▲ ▼ ▶), mit ✕ entfernen und ueber "+ Modul hinzufuegen"
-  aus allen Seiten wieder holen. Gespeichert pro Seite, "Layout zuruecksetzen" stellt `pages.json` wieder her.
+  aus allen Seiten wieder holen. **Groesse:** den Balken unten an einer Karte ziehen (Hoehe), die Linie zwischen den Spalten
+  ziehen (Breite); Doppelklick = automatisch. **Tasten/Buttons pro Modul:** in Karten mit Tasten oder Buttons gibt es ✕ je Eintrag
+  und "+ Taste/Button hinzufuegen". Gespeichert pro Seite, "Layout zuruecksetzen" stellt `pages.json` wieder her.
 * **In der Datei:** Eine Karte in `pages.json` ist `{ "title": "...", "controls": [ ... ] }`.
   Element-Typen: `seg`, `chips`, `toggles`, `range`, `kv`, `key`, `btn`, `btnrow`, `danger`, `start`, `hero`, `art`, `power`, `palette`.
   Neues Element = neuer Eintrag in `RENDER` (app.js), neue Button-Aktion = Eintrag in `ACTIONS` + `labelActions` (app.json).

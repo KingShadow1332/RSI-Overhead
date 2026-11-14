@@ -1334,7 +1334,7 @@
         "items": [
          {
           "label": "Auto-Update",
-          "on": false,
+          "on": true,
           "apply": "autoupdate"
          },
          {
