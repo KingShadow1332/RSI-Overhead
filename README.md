@@ -9,7 +9,7 @@ traegt es unter "Apps & Features" ein (Deinstallation dort oder ueber `uninstall
 Einstellungen und Tastenprofile bleiben erhalten. Ohne Fenster: Optionen siehe Kopf von `Setup.py`.
 
 Autostart, Overlay (immer oben + kein Fokusklau), Auto-Update, Theme, Spielordner, Layout und "Launcher beenden"
-stehen im Einstellungs-Fenster (Zahnrad oben rechts, Inhalt: `ui/config/settings.json`).
+stehen im Einstellungs-Fenster (Zahnrad oben links, Inhalt: `ui/config/settings.json`).
 
 ## Ohne Installation starten
 `RSI Overhead.bat` (Fenster schliessen = beenden).
@@ -42,8 +42,9 @@ ui/
 ```
 
 ## Module (Karten) umbauen
-* **Im Programm:** Stift-Symbol oben rechts = Layout-Modus. Karten verschieben (◀ ▲ ▼ ▶), entfernen (✕),
-  Module aus allen Seiten unten per "+ ..." hinzufuegen. Gespeichert pro Seite, "Layout zuruecksetzen" stellt `pages.json` wieder her.
+* **Im Programm:** Stift-Symbol oben rechts (oder Zahnrad › Module › Layout bearbeiten) = Layout-Modus. Module am Griff ⠿
+  mit der Maus in jede Spalte und Position ziehen (oder mit ◀ ▲ ▼ ▶), mit ✕ entfernen und ueber "+ Modul hinzufuegen"
+  aus allen Seiten wieder holen. Gespeichert pro Seite, "Layout zuruecksetzen" stellt `pages.json` wieder her.
 * **In der Datei:** Eine Karte in `pages.json` ist `{ "title": "...", "controls": [ ... ] }`.
   Element-Typen: `seg`, `chips`, `toggles`, `range`, `kv`, `key`, `btn`, `btnrow`, `danger`, `start`, `hero`, `art`, `power`, `palette`.
   Neues Element = neuer Eintrag in `RENDER` (app.js), neue Button-Aktion = Eintrag in `ACTIONS` + `labelActions` (app.json).

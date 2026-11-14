@@ -62,7 +62,9 @@
     "PFAD ÄNDERN": "paths.change",
     "NACH UPDATE SUCHEN": "update.check",
     "LAYOUT BEARBEITEN": "layout.edit",
-    "HOTKEY ÄNDERN": "hotkey.change"
+    "HOTKEY ÄNDERN": "hotkey.change",
+    "MODUL HINZUFÜGEN": "layout.add",
+    "LAYOUT ZURÜCKSETZEN": "layout.reset"
   },
   "footer": {
     "reset": "STANDARD ZURÜCKSETZEN",

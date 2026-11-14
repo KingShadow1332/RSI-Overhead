@@ -168,3 +168,22 @@ nav{display:flex;gap:4px}
 .ib.big{width:46px;height:46px;border-radius:12px;border-color:var(--acc);background:var(--acc-a);box-shadow:0 0 14px var(--acc-g)}
 .ib.big svg{width:22px;height:22px}
 .ib.big:hover{box-shadow:0 0 18px var(--acc-s)}
+
+/* Module verschieben / hinzufuegen */
+.etools .grab{cursor:grab;color:var(--text);font-size:14px}
+.etools .grab:active{cursor:grabbing}
+.card.dragging{opacity:.35}
+.dropline{height:4px;flex:none;margin:-15px 0;border-radius:3px;background:var(--acc);box-shadow:0 0 10px var(--acc-s);pointer-events:none}
+#grid.edit .col{min-height:120px;border-radius:14px;transition:background .15s}
+#grid.edit .col.over{background:var(--acc-a)}
+#lib .done{border-color:var(--acc);color:var(--acc);background:var(--acc-a)}
+#picker{display:none;position:absolute;inset:0;z-index:25;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(4px)}
+#picker .sheet{width:min(760px,92%);max-height:86%;overflow:auto;border:2px solid var(--acc2);border-radius:22px;background:var(--panel);padding:22px 28px 28px;box-shadow:0 0 40px var(--acc-g),0 20px 60px #000a;animation:rise .35s cubic-bezier(.2,.7,.2,1) both}
+#picker .sh-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+#picker .sh-title{font:20px 'Saira Stencil One',Impact,sans-serif;letter-spacing:4px;color:var(--acc);text-shadow:0 0 14px var(--acc-s)}
+#picker .sh-close{font-size:16px;color:var(--acc)}
+#picker .pk-h{font:700 12px Rajdhani;letter-spacing:3px;color:var(--muted);margin:18px 0 8px;text-transform:uppercase}
+#picker .mod{all:unset;cursor:pointer;white-space:nowrap;padding:8px 14px;border:1px solid var(--acc2);border-radius:8px;background:var(--panel2);color:var(--text);font:700 12px Rajdhani;letter-spacing:2px}
+#picker .mod:hover{border-color:var(--acc);color:var(--acc)}
+/* Layout-Werkzeuge innerhalb der Karte, damit sie den Titel nicht verdecken */
+.card .etools{top:3px;right:8px}

@@ -122,6 +122,8 @@ ACTIONS['update.check'] = async btn => {
   if (btn) { btn.dataset.ready = '1'; btn.textContent = 'UPDATE INSTALLIEREN'; }
 };
 ACTIONS['layout.edit'] = () => { closeSettings(); setEdit(true); };
+ACTIONS['layout.add'] = () => { closeSettings(); if (!EDIT) setEdit(true); openPicker(); };
+ACTIONS['layout.reset'] = () => resetLayout();
 /* Hotkey zum Ein-/Ausblenden: neue Tastenkombination druecken (ohne Fenster-Fokus aufgenommen). Esc = abbrechen. */
 ACTIONS['hotkey.change'] = async btn => {
   const old = btn ? btn.textContent : '';
@@ -368,8 +370,48 @@ function moveCard(page, key, dx, dy) {
   }
   saveLayout(page.id, L);
 }
-function toolbar(page, key) {
+/* Ziehen & Ablegen: am Griff ⠿ ziehen, in beliebige Spalte/Position fallen lassen. */
+let DRAG = null;
+function clearDrop() {
+  document.querySelectorAll('.dropline').forEach(x => x.remove());
+  document.querySelectorAll('.col.over').forEach(x => x.classList.remove('over'));
+}
+function dropIndex(col, e) {
+  let i = 0;
+  for (const c of col.querySelectorAll(':scope > .card')) { const r = c.getBoundingClientRect(); if (e.clientY > r.top + r.height / 2) i++; else break; }
+  return i;
+}
+function enableDnD(page, grid) {
+  grid.querySelectorAll('.col').forEach((col, ci) => {
+    col.ondragover = e => {
+      if (!DRAG) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      clearDrop(); col.classList.add('over');
+      const cards = col.querySelectorAll(':scope > .card'), i = dropIndex(col, e), line = h('div', 'dropline');
+      if (i < cards.length) col.insertBefore(line, cards[i]); else col.append(line);
+    };
+    col.ondrop = e => {
+      if (!DRAG) return;
+      e.preventDefault();
+      const i = dropIndex(col, e), key = DRAG; DRAG = null; clearDrop();
+      const L = layoutFor(page).map(c => c.slice());
+      const sc = L.findIndex(c => c.includes(key)); let idx = i;
+      if (sc >= 0) { const si = L[sc].indexOf(key); L[sc].splice(si, 1); if (sc === ci && si < idx) idx--; }
+      L[ci].splice(Math.min(idx, L[ci].length), 0, key);
+      saveLayout(page.id, L);
+    };
+  });
+}
+function toolbar(page, key, card) {
   const t = h('div', 'etools');
+  const g = h('button', 'grab', '⠿'); g.title = 'Zum Verschieben ziehen'; g.draggable = true;
+  g.ondragstart = e => {
+    DRAG = key; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', key);
+    try { e.dataTransfer.setDragImage(card, 24, 14); } catch (x) { /* ignore */ }
+    requestAnimationFrame(() => card.classList.add('dragging'));
+  };
+  g.ondragend = () => { DRAG = null; card.classList.remove('dragging'); clearDrop(); };
+  t.append(g);
   [['◀', -1, 0, 'Spalte links'], ['▲', 0, -1, 'nach oben'], ['▼', 0, 1, 'nach unten'], ['▶', 1, 0, 'Spalte rechts']].forEach(([s, dx, dy, tip]) => {
     const b = h('button', '', s); b.title = tip; b.onclick = () => moveCard(page, key, dx, dy); t.append(b);
   });
@@ -382,22 +424,48 @@ function renderLib(page) {
   const lib = $('#lib'); if (!lib) return;
   lib.style.display = EDIT ? 'flex' : 'none';
   if (!EDIT) return;
-  const used = new Set(layoutFor(page).flat());
-  lib.innerHTML = '<span class="lbl">MODULE</span>';
-  const free = Object.keys(REG).filter(k => !used.has(k));
-  free.forEach(k => {
-    const b = h('button', 'mod'); b.textContent = '+ ' + REG[k].card.title + ' · ' + REG[k].pid.toUpperCase();
-    b.onclick = () => {
-      const L = layoutFor(page).map(c => c.slice());
-      L.reduce((a, c) => (c.length < a.length ? c : a), L[0]).push(k); saveLayout(page.id, L);
-    };
-    lib.append(b);
-  });
-  if (!free.length) lib.append(h('span', 'lbl', '– alle Module sind auf dieser Seite –'));
-  const r = h('button', 'mod reset'); r.textContent = 'LAYOUT ZURÜCKSETZEN';
-  r.onclick = () => { const all = Object.assign({}, get('layout', {})); delete all[page.id]; set('layout', all); renderPage(); };
-  lib.append(r);
+  lib.innerHTML = '<span class="lbl">LAYOUT-MODUS · Module am ⠿ ziehen, ✕ entfernt sie</span>';
+  const add = h('button', 'mod', '+ MODUL HINZUFÜGEN'); add.onclick = () => openPicker();
+  const r = h('button', 'mod reset', 'LAYOUT ZURÜCKSETZEN'); r.onclick = () => resetLayout();
+  const ok = h('button', 'mod done', 'FERTIG'); ok.onclick = () => setEdit(false);
+  lib.append(add, r, ok);
 }
+const curPage = () => CFG.pages.pages.find(p => p.id === PAGE) || CFG.pages.pages[0];
+function resetLayout() {
+  const all = Object.assign({}, get('layout', {})); delete all[curPage().id]; set('layout', all); renderPage(); toast('LAYOUT ZURÜCKGESETZT');
+}
+
+/* Modul-Auswahl: alle Module (nach Seite gruppiert), die auf dieser Seite gerade nicht sichtbar sind. */
+let PICK = false;
+function renderPicker() {
+  const m = $('#picker'); if (!m) return;
+  m.style.display = PICK ? 'flex' : 'none';
+  if (!PICK) { m.innerHTML = ''; return; }
+  const page = curPage(), used = new Set(layoutFor(page).flat());
+  m.innerHTML = '<div class="sheet"><div class="sh-head"><span class="sh-title">MODUL HINZUFÜGEN</span><button class="ib sh-close" aria-label="Schließen" title="Schließen (Esc)">✕</button></div><div class="pk"></div></div>';
+  $('.sh-close', m).onclick = closePicker;
+  m.onclick = e => { if (e.target === m) closePicker(); };
+  const pk = $('.pk', m); let n = 0;
+  CFG.pages.pages.forEach(p => {
+    const free = Object.keys(REG).filter(k => REG[k].pid === p.id && !used.has(k));
+    if (!free.length) return;
+    pk.append(h('div', 'pk-h', esc(p.title)));
+    const row = h('div', 'chips');
+    free.forEach(k => {
+      const b = h('button', 'mod'); b.textContent = '+ ' + REG[k].card.title; n++;
+      b.onclick = () => {
+        const L = layoutFor(page).map(c => c.slice());
+        L.reduce((a, c) => (c.length < a.length ? c : a), L[0]).push(k);
+        saveLayout(page.id, L); toast('HINZUGEFÜGT: ' + REG[k].card.title);
+      };
+      row.append(b);
+    });
+    pk.append(row);
+  });
+  if (!n) pk.append(h('div', 'lbl', 'Alle Module sind schon auf dieser Seite.'));
+}
+function openPicker() { PICK = true; renderPicker(); }
+function closePicker() { PICK = false; renderPicker(); }
 let EDIT = false;
 
 function renderPage() {
@@ -410,12 +478,14 @@ function renderPage() {
     col.forEach(key => {
       const m = REG[key]; if (!m) return;
       const c = renderCard(m.card, m.pid, i++);
-      if (EDIT) c.append(toolbar(page, key));
+      if (EDIT) c.append(toolbar(page, key, c));
       cd.append(c);
     });
     if (cd.children.length && !cd.querySelector('.flex')) cd.lastElementChild.classList.add('flex');   // Resthoehe auffuellen
     grid.append(cd);
   });
+  if (EDIT) enableDnD(page, grid);
+  if (PICK) renderPicker();
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === page.id));
   renderLib(page);
   if (MODAL) renderModal();
@@ -423,7 +493,7 @@ function renderPage() {
 }
 function setPage(id) { PAGE = id; set('page', id); renderPage(); }
 function setEdit(on) {
-  EDIT = on;
+  EDIT = on; if (!on) { PICK = false; renderPicker(); }
   const x = document.querySelector('#hb .ib[data-act="edit"]'); if (x) x.classList.toggle('on', EDIT);
   renderPage();
   toast(EDIT ? 'LAYOUT-MODUS: MODULE VERSCHIEBEN, ENTFERNEN, HINZUFÜGEN' : 'LAYOUT GESPEICHERT');
@@ -456,7 +526,7 @@ function build() {
     <div id="pills"></div><div id="grid"></div><div id="lib"></div>
     <div id="foot"><div style="display:flex;align-items:center;gap:10px"><span class="lockic">${icon('lock', 'var(--bad)')}</span><button class="bad" id="fr"></button></div>
       <div id="hz"></div><div style="width:220px"><button class="btn" id="fc"></button></div></div>
-    <div id="modal"></div><div id="toast"></div></div>`;
+    <div id="modal"></div><div id="picker"></div><div id="toast"></div></div>`;
   $('#brand b').textContent = A.brand; $('#brand i').textContent = A.brandSub === 'auto' ? (THEME === 'RSI' ? 'STAR CITIZEN' : THEME) : A.brandSub;
   CFG.pages.pages.forEach(p => { const t = h('button', 'tab'); t.textContent = p.title; t.dataset.p = p.id; t.onclick = () => setPage(p.id); $('nav').append(t); });
   /* leftButtons = oben links (Zahnrad), headerButtons = oben rechts; beide aus config/app.json */
@@ -490,7 +560,7 @@ async function boot() {
   PAGE = get('page', CFG.pages.pages[0].id);
   build(); fit();
   addEventListener('resize', fit);
-  addEventListener('keydown', e => { if (e.key === 'Escape' && MODAL) closeSettings(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape') { if (PICK) closePicker(); else if (MODAL) closeSettings(); } });
   addEventListener('pagehide', () => navigator.sendBeacon('/api/bye', '{}'));
   setInterval(refresh, 1000);
 }

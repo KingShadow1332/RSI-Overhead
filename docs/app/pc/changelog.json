@@ -23,5 +23,10 @@
   "version": 5,
   "name": "1.0.4",
   "notes": "Einstellungs-Zahnrad jetzt oben links. Tote Symbole (Verbindung, Schutz) entfernt. Download-Paket als GitHub-Release."
+ },
+ {
+  "version": 6,
+  "name": "1.0.5",
+  "notes": "Module frei verschieben (Ziehen am Griff), entfernen und ueber Auswahl hinzufuegen. Neue Karte 'Module' im Einstellungs-Fenster."
  }
 ]
