@@ -1,7 +1,7 @@
 """RSI Overhead – Installer (nur Python-Standardbibliothek, Windows, ohne Administratorrechte).
 
 Was er macht:
-  * kopiert das Programm nach %LOCALAPPDATA%\\Programs\\RSI Overhead (oder einen Ordner deiner Wahl)
+  * kopiert das Programm nach Dokumente\\RSI Overhead (oder einen Ordner deiner Wahl)
   * legt Verknuepfungen an (Desktop, Startmenue) mit dem Logo
   * optional: Autostart mit Windows (startet minimiert)
   * traegt das Programm unter "Apps & Features" ein (Deinstallation) – Einstellungen bleiben bei Updates erhalten
@@ -20,7 +20,6 @@ VERSION = "1.0"
 SRC = os.path.dirname(os.path.abspath(__file__))
 FILES = ["rsi_overhead.py", "updater.py", "uninstall.py", "RSI Overhead.ico", "README.md"]
 DIRS = ["ui"]
-DEFAULT_TARGET = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "Programs", APP)
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 UNINSTALL_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\" + APP
 
@@ -32,10 +31,16 @@ def pythonw():
 
 
 def special_folder(name):
-    """Desktop / Startmenue-Programme auch bei umgeleiteten Ordnern (OneDrive) richtig finden."""
-    ps = {"desktop": "[Environment]::GetFolderPath('Desktop')", "programs": "[Environment]::GetFolderPath('Programs')"}[name]
+    """Desktop / Startmenue-Programme / Dokumente auch bei umgeleiteten Ordnern (OneDrive) richtig finden."""
+    ps = {"desktop": "[Environment]::GetFolderPath('Desktop')", "programs": "[Environment]::GetFolderPath('Programs')",
+          "documents": "[Environment]::GetFolderPath('MyDocuments')"}[name]
     out = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True, creationflags=0x08000000).stdout.strip()
-    return out or os.path.join(os.path.expanduser("~"), "Desktop")
+    return out or os.path.join(os.path.expanduser("~"), "Documents" if name == "documents" else "Desktop")
+
+
+def default_target():
+    """Standard-Installationsort: Dokumente\\RSI Overhead (wie bei A.R.I)."""
+    return os.path.join(special_folder("documents"), APP)
 
 
 def make_shortcut(lnk, target, args, workdir, icon, desc):
@@ -117,7 +122,7 @@ def gui():
     tk.Label(box, text="INSTALLATIONSORDNER", bg=C["panel"], fg=C["acc"], font=("Bahnschrift SemiBold", 9)).pack(anchor="w", padx=16, pady=(14, 4))
     row = tk.Frame(box, bg=C["panel"])
     row.pack(fill="x", padx=16)
-    path = tk.StringVar(value=DEFAULT_TARGET)
+    path = tk.StringVar(value=default_target())
     tk.Entry(row, textvariable=path, width=46, bg="#1D1A15", fg=C["text"], insertbackground=C["text"], relief="flat",
              highlightthickness=1, highlightbackground=C["line"], font=fb).pack(side="left", fill="x", expand=True, ipady=4)
 
@@ -163,7 +168,7 @@ def gui():
 def main():
     a = sys.argv[1:]
     if "--silent" in a:
-        t = a[a.index("--target") + 1] if "--target" in a else DEFAULT_TARGET
+        t = a[a.index("--target") + 1] if "--target" in a else default_target()
         host = install(t, "--no-desktop" not in a, "--no-startmenu" not in a, "--autostart" in a)
         if "--no-launch" not in a:
             launch(host)

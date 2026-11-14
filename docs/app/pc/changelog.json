@@ -3,5 +3,10 @@
   "version": 1,
   "name": "1.0.0",
   "notes": "Erste Version"
+ },
+ {
+  "version": 2,
+  "name": "1.0.1",
+  "notes": "Einstellungs-Fenster (Zahnrad): Auto-Start, Overlay, Auto-Update, Theme, Spielordner, Layout. Installation standardmaessig in Dokumente."
  }
 ]

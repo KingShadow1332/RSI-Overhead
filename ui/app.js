@@ -121,6 +121,7 @@ ACTIONS['update.check'] = async btn => {
   toast('UPDATE ' + r.latest_name + ' VERFÜGBAR' + (r.notes && r.notes.length ? ' · ' + r.notes[r.notes.length - 1].slice(0, 60) : ''));
   if (btn) { btn.dataset.ready = '1'; btn.textContent = 'UPDATE INSTALLIEREN'; }
 };
+ACTIONS['layout.edit'] = () => { closeSettings(); setEdit(true); };
 ACTIONS.quit = async () => { await api('/api/quit', {}); toast('BEENDET'); setTimeout(() => window.close(), 300); };
 ACTIONS['paths.change'] = async () => {
   toast('ORDNER WÄHLEN …');
@@ -403,9 +404,35 @@ function renderPage() {
   });
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === page.id));
   renderLib(page);
+  if (MODAL) renderModal();
   updateLive();
 }
 function setPage(id) { PAGE = id; set('page', id); renderPage(); }
+function setEdit(on) {
+  EDIT = on;
+  const x = document.querySelector('#hb .ib[data-act="edit"]'); if (x) x.classList.toggle('on', EDIT);
+  renderPage();
+  toast(EDIT ? 'LAYOUT-MODUS: MODULE VERSCHIEBEN, ENTFERNEN, HINZUFÜGEN' : 'LAYOUT GESPEICHERT');
+}
+
+/* ---------- Einstellungen (Zahnrad oben rechts): Karten kommen aus config/settings.json ---------- */
+let MODAL = false;
+function renderModal() {
+  const m = $('#modal'); if (!m) return;
+  m.style.display = MODAL ? 'flex' : 'none';
+  if (!MODAL) { m.innerHTML = ''; return; }
+  const keep = m.querySelector('.sheet') ? m.querySelector('.sheet').scrollTop : 0, cfg = CFG.settings;
+  m.innerHTML = '<div class="sheet"><div class="sh-head"><span class="sh-title"></span><button class="ib sh-close" aria-label="Schließen" title="Schließen (Esc)">✕</button></div><div class="sh-grid"></div></div>';
+  $('.sh-title', m).textContent = cfg.title || 'EINSTELLUNGEN';
+  $('.sh-close', m).onclick = closeSettings;
+  m.onclick = e => { if (e.target === m) closeSettings(); };
+  const g = $('.sh-grid', m); let i = 0;
+  cfg.columns.forEach(col => { const cd = h('div', 'col'); col.forEach(card => cd.append(renderCard(card, 'settings', i++))); g.append(cd); });
+  $('.sheet', m).scrollTop = keep;
+  updateLive();
+}
+function openSettings() { MODAL = true; renderModal(); }
+function closeSettings() { MODAL = false; renderModal(); }
 
 function build() {
   const A = CFG.app;
@@ -415,13 +442,15 @@ function build() {
     <div id="pills"></div><div id="grid"></div><div id="lib"></div>
     <div id="foot"><div style="display:flex;align-items:center;gap:10px"><span class="lockic">${icon('lock', 'var(--bad)')}</span><button class="bad" id="fr"></button></div>
       <div id="hz"></div><div style="width:220px"><button class="btn" id="fc"></button></div></div>
-    <div id="toast"></div></div>`;
+    <div id="modal"></div><div id="toast"></div></div>`;
   $('#brand b').textContent = A.brand; $('#brand i').textContent = A.brandSub === 'auto' ? (THEME === 'RSI' ? 'STAR CITIZEN' : THEME) : A.brandSub;
   CFG.pages.pages.forEach(p => { const t = h('button', 'tab'); t.textContent = p.title; t.dataset.p = p.id; t.onclick = () => setPage(p.id); $('nav').append(t); });
   A.headerButtons.forEach(b => {
     const x = h('button', 'ib', icon(b.icon)); x.title = b.title; x.setAttribute('aria-label', b.title);
+    if (b.action) x.dataset.act = b.action;
     x.onclick = () => {
-      if (b.action === 'edit') { EDIT = !EDIT; x.classList.toggle('on', EDIT); renderPage(); toast(EDIT ? 'LAYOUT-MODUS: MODULE VERSCHIEBEN, ENTFERNEN, HINZUFÜGEN' : 'LAYOUT GESPEICHERT'); }
+      if (b.action === 'edit') setEdit(!EDIT);
+      else if (b.action === 'settings') openSettings();
       else if (b.goto) setPage(b.goto); else toast(b.toast || '');
     };
     $('#hb').append(x);
@@ -437,13 +466,14 @@ function build() {
 
 async function boot() {
   const j = u => fetch(u).then(r => r.json());
-  [CFG.app, CFG.pages, CFG.themes, CFG.keys] = await Promise.all([j('config/app.json'), j('config/pages.json'), j('config/themes.json'), j('config/keybinds.json')]);
+  [CFG.app, CFG.pages, CFG.themes, CFG.keys, CFG.settings] = await Promise.all([j('config/app.json'), j('config/pages.json'), j('config/themes.json'), j('config/keybinds.json'), j('config/settings.json')]);
   buildRegistry();
   await refresh();
   applyTheme(get('theme', 'RSI'));
   PAGE = get('page', CFG.pages.pages[0].id);
   build(); fit();
   addEventListener('resize', fit);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && MODAL) closeSettings(); });
   addEventListener('pagehide', () => navigator.sendBeacon('/api/bye', '{}'));
   setInterval(refresh, 1000);
 }

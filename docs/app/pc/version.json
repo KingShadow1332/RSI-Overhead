@@ -1,6 +1,6 @@
 {
- "version": 1,
- "name": "1.0.0",
+ "version": 2,
+ "name": "1.0.1",
  "zip": "rsi-overhead.zip",
- "sha256": "c66de749c1a54288c97fd98d061cd7d5d8ee75835308cb19c271096ce65e35b5"
+ "sha256": "2b3e751ad191ce040a9c746af39f9de584f43c1d5a558598ec2849ef9f82cbbc"
 }

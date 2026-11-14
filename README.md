@@ -1,13 +1,13 @@
 # RSI Overhead
 
 ## Installieren (empfohlen, auch auf anderen PCs mit Python)
-`Setup.bat` doppelklicken. Der Installer kopiert das Programm nach `%LOCALAPPDATA%\Programs\RSI Overhead`,
+`Setup.bat` doppelklicken. Der Installer kopiert das Programm nach `Dokumente\RSI Overhead` (wie A.R.I; der Ordner ist waehlbar),
 legt Desktop- und Startmenue-Verknuepfung mit dem Logo an (optional: Autostart mit Windows, minimiert) und
 traegt es unter "Apps & Features" ein (Deinstallation dort oder ueber `uninstall.py`). Neu installieren = Update,
 Einstellungen und Tastenprofile bleiben erhalten. Ohne Fenster: Optionen siehe Kopf von `Setup.py`.
 
-Autostart, Overlay (immer oben + kein Fokusklau), Spielordner und "Launcher beenden" lassen sich auch im Programm
-unter SYSTEM bzw. Start einstellen.
+Autostart, Overlay (immer oben + kein Fokusklau), Auto-Update, Theme, Spielordner, Layout und "Launcher beenden"
+stehen im Einstellungs-Fenster (Zahnrad oben rechts, Inhalt: `ui/config/settings.json`).
 
 ## Ohne Installation starten
 `RSI Overhead.bat` (Fenster schliessen = beenden).

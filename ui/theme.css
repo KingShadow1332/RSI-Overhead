@@ -155,3 +155,12 @@ nav{display:flex;gap:4px}
 .kv b.editable:hover{color:var(--acc)}
 .kv input.edit{all:unset;box-sizing:border-box;width:60%;text-align:right;font:700 14px Rajdhani;letter-spacing:1px;color:var(--acc);border-bottom:1px solid var(--acc);user-select:text;-webkit-user-select:text}
 #brand .logo{height:56px;width:56px;border-radius:50%;object-fit:cover;box-shadow:0 0 14px var(--acc-s);display:block}
+
+/* Einstellungs-Fenster (Zahnrad) */
+#modal{display:none;position:absolute;inset:0;z-index:20;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(4px)}
+#modal .sheet{width:min(900px,92%);max-height:88%;overflow:auto;border:2px solid var(--acc2);border-radius:22px;background:var(--panel);padding:22px 28px 28px;box-shadow:0 0 40px var(--acc-g),0 20px 60px #000a;animation:rise .35s cubic-bezier(.2,.7,.2,1) both}
+#modal .sh-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
+#modal .sh-title{font:20px 'Saira Stencil One',Impact,sans-serif;letter-spacing:4px;color:var(--acc);text-shadow:0 0 14px var(--acc-s)}
+#modal .sh-close{font-size:16px;color:var(--acc)}
+#modal .sh-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+#modal .card{animation:none}

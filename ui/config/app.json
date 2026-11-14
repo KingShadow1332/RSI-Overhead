@@ -38,7 +38,7 @@
     {
       "icon": "gear",
       "title": "Einstellungen",
-      "goto": "system"
+      "action": "settings"
     },
     {
       "icon": "wifi",
@@ -67,7 +67,8 @@
     "KEYBINDS SICHERN": "backup",
     "LAUNCHER BEENDEN": "quit",
     "PFAD ÄNDERN": "paths.change",
-    "NACH UPDATE SUCHEN": "update.check"
+    "NACH UPDATE SUCHEN": "update.check",
+    "LAYOUT BEARBEITEN": "layout.edit"
   },
   "footer": {
     "reset": "STANDARD ZURÜCKSETZEN",
