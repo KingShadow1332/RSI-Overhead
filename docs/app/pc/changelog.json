@@ -38,5 +38,10 @@
   "version": 8,
   "name": "1.0.7",
   "notes": "Fix: Das Programm beendet sich nicht mehr selbst, wenn das Fenster minimiert oder hinter dem Spiel verdeckt ist (Beenden jetzt nur noch, wenn das Fenster geschlossen wird)."
+ },
+ {
+  "version": 9,
+  "name": "1.0.8",
+  "notes": "Version wird neben dem Namen angezeigt (z. B. STAR CITIZEN - V1.0.8), damit man sieht, welcher Stand laeuft."
  }
 ]

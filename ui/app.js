@@ -170,6 +170,12 @@ function updateLive() {
     p.classList.add(st === 'ping' ? (S.stats.ping != null ? 'ok' : 'off') : st === 'game' ? (run ? 'ok' : 'wait') : 'ok');
   });
   const s = $('#state'); if (s) s.textContent = run ? CFG.app.statusText.running : CFG.app.statusText.ready;
+  /* Version immer sichtbar unter dem Namen, damit man sieht, welcher Stand gerade laeuft */
+  const bi = document.querySelector('#brand i');
+  if (bi && S.info && S.info.app_version) {
+    const base = CFG.app.brandSub === 'auto' ? (THEME === 'RSI' ? 'STAR CITIZEN' : THEME) : CFG.app.brandSub;
+    bi.textContent = base + ' · V' + S.info.app_version;
+  }
 }
 
 /* ---------- Elemente ---------- */
