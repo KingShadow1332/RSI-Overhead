@@ -1,0 +1,81 @@
+{
+  "_hinweis": "Neue Themes: einfach einen Block kopieren, Namen aendern, Farben anpassen. Der Name erscheint automatisch in der Auswahl auf der System-Seite (die Optionen dort stehen in pages.json).",
+  "RSI": {
+    "bg": "#05080D",
+    "panel": "#0B1320",
+    "panel2": "#0F1A2C",
+    "line": "#1B3550",
+    "acc": "#3FD0FF",
+    "acc2": "#0A8FC4",
+    "text": "#CFE6F5",
+    "muted": "#6F8AA0",
+    "onacc": "#021018",
+    "warn": "#FFB84A",
+    "bad": "#FF5A6A"
+  },
+  "DRAKE": {
+    "bg": "#0A0907",
+    "panel": "#141210",
+    "panel2": "#1D1A15",
+    "line": "#3B352B",
+    "acc": "#F58A1F",
+    "acc2": "#9A5410",
+    "text": "#EFE9DD",
+    "muted": "#A39A88",
+    "onacc": "#140A02",
+    "warn": "#F2D14B",
+    "bad": "#F0544A"
+  },
+  "ORIGIN": {
+    "bg": "#08090C",
+    "panel": "#101319",
+    "panel2": "#171B23",
+    "line": "#2E3544",
+    "acc": "#E9D8A6",
+    "acc2": "#8C7B45",
+    "text": "#F1F2F4",
+    "muted": "#98A0AE",
+    "onacc": "#14110A",
+    "warn": "#F2D14B",
+    "bad": "#F0544A"
+  },
+  "MISC": {
+    "bg": "#060A0D",
+    "panel": "#0E1519",
+    "panel2": "#141E24",
+    "line": "#2A3D47",
+    "acc": "#34C3D6",
+    "acc2": "#1B7886",
+    "text": "#E3F2F5",
+    "muted": "#8AA3AB",
+    "onacc": "#04161A",
+    "warn": "#F2D14B",
+    "bad": "#F0544A"
+  },
+  "BANU": {
+    "bg": "#080A06",
+    "panel": "#11160E",
+    "panel2": "#181F13",
+    "line": "#34402A",
+    "acc": "#9BE04A",
+    "acc2": "#5A8A22",
+    "text": "#EAF3DD",
+    "muted": "#9CAA88",
+    "onacc": "#0B1503",
+    "warn": "#F2D14B",
+    "bad": "#F0544A"
+  },
+  "ARGO": {
+    "bg": "#0A0A06",
+    "panel": "#15150D",
+    "panel2": "#1E1E13",
+    "line": "#3F3F26",
+    "acc": "#FFD21F",
+    "acc2": "#9A8210",
+    "text": "#F5F2DC",
+    "muted": "#AAA68A",
+    "onacc": "#181400",
+    "warn": "#FF9A1F",
+    "bad": "#F0544A"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "_hinweis": "Rahmen des Programms. pages.json beschreibt jede Seite (Spalten > Karten > Elemente), themes.json die Farben, keybinds.json die Tasten. Reihenfolge und Namen der Tabs ergeben sich aus pages.json.",
+  "title": "RSI Overhead",
+  "brand": "RSI OVERHEAD",
+  "brandSub": "auto",
+  "design": {
+    "width": 1240,
+    "height": 1260
+  },
+  "pills": [
+    {
+      "label": "PLATTFORM",
+      "status": "ping"
+    },
+    {
+      "label": "UNIVERSUM",
+      "status": "game"
+    },
+    {
+      "label": "ARENA",
+      "status": "game"
+    },
+    {
+      "label": "LAUNCHER",
+      "status": "ok"
+    }
+  ],
+  "statusText": {
+    "ready": "BEREIT ZUM START",
+    "running": "STAR CITIZEN LÄUFT"
+  },
+  "headerButtons": [
+    {
+      "icon": "edit",
+      "title": "Layout bearbeiten (Module)",
+      "action": "edit"
+    },
+    {
+      "icon": "gear",
+      "title": "Einstellungen",
+      "goto": "system"
+    },
+    {
+      "icon": "wifi",
+      "title": "Verbindung",
+      "toast": "Verbindung: siehe PING auf der Start-Seite"
+    },
+    {
+      "icon": "shield",
+      "title": "Schutz",
+      "toast": "Nicht verbunden"
+    }
+  ],
+  "labelActions": {
+    "KEYBINDS LADEN": "keys.load",
+    "KEYBINDS SPEICHERN": "keys.save",
+    "STANDARD ZURÜCKSETZEN": "reset",
+    "SPIEL": "open.game",
+    "LOGS": "open.logs",
+    "SCREENS": "open.screens",
+    "CONFIG": "open.config",
+    "SPIEL STARTEN": "launch",
+    "SERVERSTATUS": "open.status",
+    "GAME.LOG": "open.gamelog",
+    "SCREENSHOTS": "open.screens",
+    "SHADER-CACHE": "open.cache",
+    "KEYBINDS SICHERN": "backup",
+    "LAUNCHER BEENDEN": "quit",
+    "PFAD ÄNDERN": "paths.change",
+    "NACH UPDATE SUCHEN": "update.check"
+  },
+  "footer": {
+    "reset": "STANDARD ZURÜCKSETZEN",
+    "clear": "CACHE LEEREN"
+  }
+}

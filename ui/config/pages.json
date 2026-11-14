@@ -1,0 +1,1670 @@
+{
+ "pages": [
+  {
+   "id": "normal",
+   "title": "NORMAL",
+   "columns": [
+    [
+     {
+      "title": "SYSTEM-STATUS",
+      "flex": false,
+      "controls": [
+       {
+        "type": "kv",
+        "label": "CPU",
+        "value": "—",
+        "bind": "cpu"
+       },
+       {
+        "type": "kv",
+        "label": "RAM",
+        "value": "—",
+        "bind": "ram"
+       },
+       {
+        "type": "kv",
+        "label": "PING",
+        "value": "—",
+        "bind": "ping"
+       },
+       {
+        "type": "kv",
+        "label": "STAR CITIZEN",
+        "value": "—",
+        "bind": "game"
+       },
+       {
+        "type": "kv",
+        "label": "BUILD",
+        "value": "—",
+        "bind": "build"
+       }
+      ]
+     },
+     {
+      "title": "UMGEBUNG",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "LIVE",
+         "PTU",
+         "EPTU"
+        ],
+        "value": 0
+       },
+       {
+        "type": "kv",
+        "label": "INSTALLIERT",
+        "value": "[VERSION]",
+        "bind": "version"
+       },
+       {
+        "type": "btn",
+        "label": "KANAL WECHSELN"
+       }
+      ]
+     },
+     {
+      "title": "SPIELMODUS",
+      "flex": false,
+      "controls": [
+       {
+        "type": "chips",
+        "options": [
+         "UNIVERSUM",
+         "ARENA COMMANDER",
+         "STAR MARINE"
+        ],
+        "value": 0
+       },
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Hangar zuerst",
+          "on": false
+         }
+        ],
+        "grid": false
+       }
+      ]
+     },
+     {
+      "title": "DATEIEN",
+      "flex": true,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Schnell-Prüfung",
+          "on": true
+         },
+         {
+          "label": "Logs",
+          "on": false
+         }
+        ],
+        "grid": false
+       },
+       {
+        "type": "btn",
+        "label": "DATEIEN PRÜFEN"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "PROFIL · NORMAL",
+      "flex": false,
+      "controls": [
+       {
+        "type": "hero",
+        "art": "normal-0",
+        "title": "NORMAL-START",
+        "sub": "[SCHIFF]",
+        "desc": "Standard-Start für das Persistente Universum, Arena Commander und Star Marine."
+       }
+      ]
+     },
+     {
+      "title": "START",
+      "flex": false,
+      "controls": [
+       {
+        "type": "start"
+       },
+       {
+        "type": "kv",
+        "label": "BEREIT",
+        "value": "START · STAR CITIZEN LIVE"
+       }
+      ]
+     },
+     {
+      "title": "ORDNER",
+      "flex": false,
+      "controls": [
+       {
+        "type": "btnrow",
+        "items": [
+         "SPIEL",
+         "LOGS",
+         "SCREENS",
+         "CONFIG"
+        ]
+       }
+      ]
+     },
+     {
+      "title": "SCHNELLZUGRIFF",
+      "flex": true,
+      "controls": [
+       {
+        "type": "btnrow",
+        "items": [
+         "SPIEL STARTEN",
+         "SERVERSTATUS"
+        ]
+       },
+       {
+        "type": "btnrow",
+        "items": [
+         "GAME.LOG",
+         "SCREENSHOTS"
+        ]
+       },
+       {
+        "type": "btnrow",
+        "items": [
+         "SHADER-CACHE",
+         "KEYBINDS SICHERN"
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "SERVER",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "EU",
+         "US",
+         "AUS"
+        ],
+        "value": 0
+       },
+       {
+        "type": "kv",
+        "label": "PING",
+        "value": "[PING]",
+        "bind": "ping"
+       },
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Auto-Wahl",
+          "on": true
+         }
+        ],
+        "grid": false
+       }
+      ]
+     },
+     {
+      "title": "SYSTEM",
+      "flex": true,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Vollbild",
+          "on": true
+         },
+         {
+          "label": "Auto-Start",
+          "on": false,
+          "apply": "autostart"
+         },
+         {
+          "label": "Overlay",
+          "on": true,
+          "apply": "overlay"
+         },
+         {
+          "label": "HDR",
+          "on": false
+         }
+        ],
+        "grid": true
+       },
+       {
+        "type": "btn",
+        "label": "LAUNCHER BEENDEN"
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "id": "mining",
+   "title": "MINING",
+   "columns": [
+    [
+     {
+      "title": "STARTSYSTEM",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "STANTON",
+         "PYRO"
+        ],
+        "value": 0
+       }
+      ]
+     },
+     {
+      "title": "ABBAU-GEBIET",
+      "flex": false,
+      "controls": [
+       {
+        "type": "chips",
+        "options": [
+         "ASTEROIDENFELD",
+         "LAGRANGE-PUNKTE",
+         "MONDE",
+         "PLANETEN-RING",
+         "HÖHLEN"
+        ],
+        "value": 0
+       }
+      ]
+     },
+     {
+      "title": "ERZ-FOKUS",
+      "flex": false,
+      "controls": [
+       {
+        "type": "chips",
+        "options": [
+         "QUANTANIUM",
+         "BEXALIT",
+         "TARANITE",
+         "LARANITE",
+         "AGRICIUM",
+         "HADANITE",
+         "BERADOM",
+         "GOLD"
+        ],
+        "value": 0
+       }
+      ]
+     },
+     {
+      "title": "LETZTE SESSION",
+      "flex": true,
+      "controls": [
+       {
+        "type": "kv",
+        "label": "DAUER",
+        "value": "[DAUER]"
+       },
+       {
+        "type": "kv",
+        "label": "ERTRAG",
+        "value": "[ERTRAG]"
+       },
+       {
+        "type": "kv",
+        "label": "FRACHT",
+        "value": "[SCU]"
+       },
+       {
+        "type": "btn",
+        "label": "SESSION-LOG ÖFFNEN"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "PROFIL · MINING",
+      "flex": false,
+      "controls": [
+       {
+        "type": "hero",
+        "art": "mining-0",
+        "title": "MINING-PROFIL",
+        "sub": "[MINING-SCHIFF]",
+        "desc": "Abbau-Profil: Laser, Overlays und Erz-Fokus vor dem Start einstellen."
+       }
+      ]
+     },
+     {
+      "title": "START",
+      "flex": false,
+      "controls": [
+       {
+        "type": "start"
+       },
+       {
+        "type": "kv",
+        "label": "BEREIT",
+        "value": "START · STAR CITIZEN LIVE"
+       }
+      ]
+     },
+     {
+      "title": "LASER-KONFIG",
+      "flex": false,
+      "controls": [
+       {
+        "type": "range",
+        "label": "LASERLEISTUNG",
+        "value": 70,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "INSTABILITÄTS-WARNUNG",
+        "value": 40,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "OPTIMALES LADEFENSTER",
+        "value": 55,
+        "min": 0,
+        "max": 100
+       }
+      ]
+     },
+     {
+      "title": "TOOLS BEIM START",
+      "flex": true,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Rock-Scan",
+          "on": true
+         },
+         {
+          "label": "Erzwerte",
+          "on": true
+         },
+         {
+          "label": "Route",
+          "on": false
+         },
+         {
+          "label": "Funk",
+          "on": false
+         }
+        ],
+        "grid": true
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "GRAFIK-PROFIL",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "PERFORMANCE",
+         "AUSGEWOGEN",
+         "QUALITÄT"
+        ],
+        "value": 0
+       },
+       {
+        "type": "btn",
+        "label": "PROFIL ANWENDEN"
+       }
+      ]
+     },
+     {
+      "title": "MINING-HUD",
+      "flex": false,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Masse",
+          "on": true
+         },
+         {
+          "label": "Wert",
+          "on": true
+         },
+         {
+          "label": "Zusammen-setzung",
+          "on": true
+         },
+         {
+          "label": "Instabilität",
+          "on": true
+         },
+         {
+          "label": "Wider-stand",
+          "on": true
+         },
+         {
+          "label": "Lade-fenster",
+          "on": true
+         }
+        ],
+        "grid": true
+       }
+      ]
+     },
+     {
+      "title": "ABBAU-MODULE",
+      "flex": false,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Modul 1",
+          "on": true
+         },
+         {
+          "label": "Modul 2",
+          "on": true
+         },
+         {
+          "label": "Modul 3",
+          "on": false
+         }
+        ],
+        "grid": false
+       },
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Gadget",
+          "on": false
+         },
+         {
+          "label": "Auto-Sperre",
+          "on": true
+         }
+        ],
+        "grid": false
+       }
+      ]
+     },
+     {
+      "title": "LAUT-STÄRKE",
+      "flex": true,
+      "controls": [
+       {
+        "type": "range",
+        "label": "LASER-SOUND",
+        "value": 60,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "WARN-SIGNALE",
+        "value": 80,
+        "min": 0,
+        "max": 100
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "id": "salvage",
+   "title": "SALVAGE",
+   "columns": [
+    [
+     {
+      "title": "STARTSYSTEM",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "STANTON",
+         "PYRO"
+        ],
+        "value": 0
+       }
+      ]
+     },
+     {
+      "title": "BERGUNGS-GEBIET",
+      "flex": false,
+      "controls": [
+       {
+        "type": "chips",
+        "options": [
+         "WRACKFELDER",
+         "STATIONEN",
+         "ASTEROIDEN",
+         "SCHLACHT-ORTE"
+        ],
+        "value": 0
+       }
+      ]
+     },
+     {
+      "title": "MATERIAL-FOKUS",
+      "flex": false,
+      "controls": [
+       {
+        "type": "chips",
+        "options": [
+         "RMC",
+         "CMAT",
+         "SCHROTT",
+         "KOMPONENTEN",
+         "WAFFEN",
+         "FRACHT"
+        ],
+        "value": 0
+       }
+      ]
+     },
+     {
+      "title": "LETZTE SESSION",
+      "flex": true,
+      "controls": [
+       {
+        "type": "kv",
+        "label": "DAUER",
+        "value": "[DAUER]"
+       },
+       {
+        "type": "kv",
+        "label": "WRACKS",
+        "value": "[ANZAHL]"
+       },
+       {
+        "type": "kv",
+        "label": "MATERIAL",
+        "value": "[SCU]"
+       },
+       {
+        "type": "btn",
+        "label": "SESSION-LOG ÖFFNEN"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "PROFIL · SALVAGE",
+      "flex": false,
+      "controls": [
+       {
+        "type": "hero",
+        "art": "salvage-0",
+        "title": "SALVAGE-PROFIL",
+        "sub": "[SALVAGE-SCHIFF]",
+        "desc": "Bergungs-Profil: Wracks markieren, Hülle scannen und Material sortieren."
+       }
+      ]
+     },
+     {
+      "title": "START",
+      "flex": false,
+      "controls": [
+       {
+        "type": "start"
+       },
+       {
+        "type": "kv",
+        "label": "BEREIT",
+        "value": "START · STAR CITIZEN LIVE"
+       }
+      ]
+     },
+     {
+      "title": "BERGUNGS-MODUS",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "SCHABEN",
+         "AUFBRECHEN",
+         "ZERLEGEN"
+        ],
+        "value": 0
+       },
+       {
+        "type": "range",
+        "label": "STRAHLLEISTUNG",
+        "value": 65,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "STRAHL-RADIUS",
+        "value": 45,
+        "min": 0,
+        "max": 100
+       }
+      ]
+     },
+     {
+      "title": "TOOLS BEIM START",
+      "flex": true,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Hüllen-Scan",
+          "on": true
+         },
+         {
+          "label": "Reaktor-Warnung",
+          "on": true
+         },
+         {
+          "label": "Route",
+          "on": false
+         },
+         {
+          "label": "Funk",
+          "on": false
+         }
+        ],
+        "grid": true
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "GRAFIK-PROFIL",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "PERFORMANCE",
+         "AUSGEWOGEN",
+         "QUALITÄT"
+        ],
+        "value": 0
+       },
+       {
+        "type": "btn",
+        "label": "PROFIL ANWENDEN"
+       }
+      ]
+     },
+     {
+      "title": "BERGUNGS-HUD",
+      "flex": false,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Wrack-Marker",
+          "on": true
+         },
+         {
+          "label": "Hüllen-zustand",
+          "on": true
+         },
+         {
+          "label": "Reaktor",
+          "on": true
+         },
+         {
+          "label": "Gefahr",
+          "on": true
+         },
+         {
+          "label": "Wert",
+          "on": true
+         },
+         {
+          "label": "Route",
+          "on": false
+         }
+        ],
+        "grid": true
+       }
+      ]
+     },
+     {
+      "title": "FRACHT-VERLADUNG",
+      "flex": false,
+      "controls": [
+       {
+        "type": "kv",
+        "label": "RMC",
+        "value": "[SCU]"
+       },
+       {
+        "type": "kv",
+        "label": "CMAT",
+        "value": "[SCU]"
+       },
+       {
+        "type": "kv",
+        "label": "SCHROTT",
+        "value": "[SCU]"
+       },
+       {
+        "type": "btn",
+        "label": "FRACHT-MANIFEST"
+       }
+      ]
+     },
+     {
+      "title": "LAUT-STÄRKE",
+      "flex": true,
+      "controls": [
+       {
+        "type": "range",
+        "label": "STRAHL-SOUND",
+        "value": 60,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "WARN-SIGNALE",
+        "value": 80,
+        "min": 0,
+        "max": 100
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "id": "kampf",
+   "title": "KAMPF",
+   "columns": [
+    [
+     {
+      "title": "ENERGIE-VERTEILUNG",
+      "flex": false,
+      "controls": [
+       {
+        "type": "power",
+        "groups": [
+         {
+          "id": "pw1",
+          "label": "WAFFEN",
+          "levels": 8,
+          "value": 6
+         },
+         {
+          "id": "pw2",
+          "label": "SCHILDE",
+          "levels": 8,
+          "value": 5
+         },
+         {
+          "id": "pw3",
+          "label": "ANTRIEB",
+          "levels": 8,
+          "value": 4
+         },
+         {
+          "id": "pw4",
+          "label": "RADAR",
+          "levels": 8,
+          "value": 3
+         }
+        ]
+       },
+       {
+        "type": "chips",
+        "options": [
+         "AUSGEWOGEN",
+         "OFFENSIV",
+         "DEFENSIV",
+         "FLUCHT"
+        ],
+        "value": 0
+       }
+      ]
+     },
+     {
+      "title": "SCHILDE",
+      "flex": false,
+      "controls": [
+       {
+        "type": "art",
+        "src": "kampf-0"
+       },
+       {
+        "type": "chips",
+        "options": [
+         "AUTO",
+         "VORNE",
+         "HINTEN",
+         "LINKS",
+         "RECHTS"
+        ],
+        "value": 0
+       },
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Auto-Verteilung",
+          "on": true
+         },
+         {
+          "label": "Angriffs-warnung",
+          "on": true
+         }
+        ],
+        "grid": false
+       }
+      ]
+     },
+     {
+      "title": "FLUGMODUS",
+      "flex": true,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "SCM",
+         "NAV"
+        ],
+        "value": 0
+       },
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Decouple",
+          "on": true
+         },
+         {
+          "label": "G-Safe",
+          "on": true
+         },
+         {
+          "label": "SCM-Limiter",
+          "on": true
+         },
+         {
+          "label": "Gimbal-Assist",
+          "on": true
+         }
+        ],
+        "grid": true
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "PROFIL · KAMPF",
+      "flex": false,
+      "controls": [
+       {
+        "type": "hero",
+        "art": "kampf-1",
+        "title": "KAMPF-PROFIL",
+        "sub": "[KAMPF-SCHIFF]",
+        "desc": "Gefechts-Profil: Energie, Schilde, Waffen, Raketen und Ziel-HUD."
+       }
+      ]
+     },
+     {
+      "title": "START",
+      "flex": false,
+      "controls": [
+       {
+        "type": "start"
+       },
+       {
+        "type": "kv",
+        "label": "BEREIT",
+        "value": "START · STAR CITIZEN LIVE"
+       }
+      ]
+     },
+     {
+      "title": "WAFFEN",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "GIMBAL",
+         "FEST"
+        ],
+        "value": 0
+       },
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Gruppe 1",
+          "on": true
+         },
+         {
+          "label": "Gruppe 2",
+          "on": true
+         },
+         {
+          "label": "Gruppe 3",
+          "on": false
+         },
+         {
+          "label": "Gruppe 4",
+          "on": false
+         }
+        ],
+        "grid": true
+       },
+       {
+        "type": "seg",
+        "options": [
+         "EINZEL",
+         "SALVE",
+         "DAUER"
+        ],
+        "value": 0
+       }
+      ]
+     },
+     {
+      "title": "NOTFALL",
+      "flex": true,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Auto-Quantum-Flucht",
+          "on": false
+         }
+        ],
+        "grid": false
+       },
+       {
+        "type": "danger",
+        "label": "NOTFALL-PROFIL LADEN"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "LOADOUT",
+      "flex": false,
+      "controls": [
+       {
+        "type": "chips",
+        "options": [
+         "DOGFIGHT",
+         "ESKORTE",
+         "BOUNTY",
+         "ABFANGEN",
+         "EIGENES"
+        ],
+        "value": 0
+       },
+       {
+        "type": "btn",
+        "label": "LOADOUT LADEN"
+       }
+      ]
+     },
+     {
+      "title": "ZIEL-HUD",
+      "flex": false,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Zielinfo",
+          "on": true
+         },
+         {
+          "label": "Radar",
+          "on": true
+         },
+         {
+          "label": "Gefahren",
+          "on": true
+         },
+         {
+          "label": "Freund-Tags",
+          "on": true
+         },
+         {
+          "label": "Raketen-warnung",
+          "on": true
+         },
+         {
+          "label": "Gepinnte Ziele",
+          "on": false
+         }
+        ],
+        "grid": true
+       }
+      ]
+     },
+     {
+      "title": "RAKETEN & GEGENMASSNAHMEN",
+      "flex": false,
+      "controls": [
+       {
+        "type": "chips",
+        "options": [
+         "IR",
+         "EM",
+         "CS"
+        ],
+        "value": 0
+       },
+       {
+        "type": "kv",
+        "label": "RAKETEN",
+        "value": "[ANZAHL]"
+       },
+       {
+        "type": "kv",
+        "label": "FLARES",
+        "value": "[ANZAHL]"
+       },
+       {
+        "type": "kv",
+        "label": "CHAFF",
+        "value": "[ANZAHL]"
+       },
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Auto-Flares",
+          "on": false
+         },
+         {
+          "label": "Auto-Chaff",
+          "on": false
+         }
+        ],
+        "grid": false
+       }
+      ]
+     },
+     {
+      "title": "SPIELMODUS & FPS",
+      "flex": true,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "UNIVERSUM",
+         "ARENA"
+        ],
+        "value": 0
+       },
+       {
+        "type": "seg",
+        "options": [
+         "60",
+         "90",
+         "144",
+         "MAX"
+        ],
+        "value": 0
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "id": "eingabe",
+   "title": "EINGABE",
+   "columns": [
+    [
+     {
+      "title": "STEUERGERÄT",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "MAUS + TASTE",
+         "GAMEPAD"
+        ],
+        "value": 0
+       },
+       {
+        "type": "seg",
+        "options": [
+         "JOYSTICK",
+         "HOTAS"
+        ],
+        "value": 0
+       },
+       {
+        "type": "kv",
+        "label": "ERKANNT",
+        "value": "[GERÄT]",
+        "bind": "device"
+       }
+      ]
+     },
+     {
+      "title": "ACHSEN",
+      "flex": false,
+      "controls": [
+       {
+        "type": "range",
+        "label": "EMPFINDLICHKEIT",
+        "value": 50,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "TOTZONE",
+        "value": 20,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "KURVE",
+        "value": 45,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Achse umkehren",
+          "on": false
+         },
+         {
+          "label": "Gerade Kurve",
+          "on": false
+         }
+        ],
+        "grid": false
+       }
+      ]
+     },
+     {
+      "title": "KEYBINDS",
+      "flex": true,
+      "controls": [
+       {
+        "type": "chips",
+        "options": [
+         "STANDARD",
+         "KAMPF",
+         "MINING",
+         "SALVAGE"
+        ],
+        "value": 0,
+        "id": "keys.profile",
+        "apply": "profile"
+       },
+       {
+        "type": "btn",
+        "label": "KEYBINDS LADEN"
+       },
+       {
+        "type": "btn",
+        "label": "KEYBINDS SPEICHERN"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "PROFIL · EINGABE",
+      "flex": false,
+      "controls": [
+       {
+        "type": "hero",
+        "art": "eingabe-0",
+        "title": "EINGABE & HUD",
+        "sub": "ACHSEN-TEST",
+        "desc": "Steuergeräte, Achsen, Tastenbelegung, Audio und HUD-Darstellung."
+       }
+      ]
+     },
+     {
+      "title": "START",
+      "flex": false,
+      "controls": [
+       {
+        "type": "start"
+       },
+       {
+        "type": "kv",
+        "label": "BEREIT",
+        "value": "START · STAR CITIZEN LIVE"
+       }
+      ]
+     },
+     {
+      "title": "TASTENBELEGUNG · KAMPF",
+      "flex": true,
+      "controls": [
+       {
+        "type": "key",
+        "label": "WAFFENGRUPPE 1",
+        "placeholder": "[TASTE]"
+       },
+       {
+        "type": "key",
+        "label": "RAKETE ABFEUERN",
+        "placeholder": "[TASTE]"
+       },
+       {
+        "type": "key",
+        "label": "ZIEL SPERREN",
+        "placeholder": "[TASTE]"
+       },
+       {
+        "type": "key",
+        "label": "DECOUPLE",
+        "placeholder": "[TASTE]"
+       },
+       {
+        "type": "key",
+        "label": "SCM / NAV",
+        "placeholder": "[TASTE]"
+       },
+       {
+        "type": "key",
+        "label": "SCHILD-VERTEILUNG",
+        "placeholder": "[TASTE]"
+       },
+       {
+        "type": "key",
+        "label": "FLARES",
+        "placeholder": "[TASTE]"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "AUDIO-MIX",
+      "flex": false,
+      "controls": [
+       {
+        "type": "range",
+        "label": "MASTER",
+        "value": 75,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "EFFEKTE",
+        "value": 70,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "MUSIK",
+        "value": 35,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "DIALOG",
+        "value": 80,
+        "min": 0,
+        "max": 100
+       }
+      ]
+     },
+     {
+      "title": "HUD-DARSTELLUNG",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "KLEIN",
+         "MITTEL",
+         "GROSS"
+        ],
+        "value": 0
+       },
+       {
+        "type": "range",
+        "label": "SICHTFELD (FOV)",
+        "value": 60,
+        "min": 0,
+        "max": 100
+       },
+       {
+        "type": "range",
+        "label": "HUD-HELLIGKEIT",
+        "value": 70,
+        "min": 0,
+        "max": 100
+       }
+      ]
+     },
+     {
+      "title": "KAMERA & EFFEKTE",
+      "flex": false,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Kopf-bewegung",
+          "on": true
+         },
+         {
+          "label": "G-Kräfte-Effekt",
+          "on": true
+         },
+         {
+          "label": "Kamera-wackeln",
+          "on": false
+         },
+         {
+          "label": "Head-Tracking",
+          "on": false
+         }
+        ],
+        "grid": true
+       }
+      ]
+     },
+     {
+      "title": "VOIP & FUNK",
+      "flex": true,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "VoIP",
+          "on": true
+         },
+         {
+          "label": "Push-to-Talk",
+          "on": true
+         },
+         {
+          "label": "Mikro-Test",
+          "on": false
+         }
+        ],
+        "grid": false
+       },
+       {
+        "type": "range",
+        "label": "MIKROFON-PEGEL",
+        "value": 65,
+        "min": 0,
+        "max": 100
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "id": "system",
+   "title": "SYSTEM",
+   "columns": [
+    [
+     {
+      "title": "ALLGEMEIN",
+      "flex": false,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Vollbild",
+          "on": true
+         },
+         {
+          "label": "Auto-Start",
+          "on": false,
+          "apply": "autostart"
+         },
+         {
+          "label": "Minimieren",
+          "on": true
+         },
+         {
+          "label": "Hinweise",
+          "on": true
+         }
+        ],
+        "grid": true
+       }
+      ]
+     },
+     {
+      "title": "SPRACHE",
+      "flex": false,
+      "controls": [
+       {
+        "type": "seg",
+        "options": [
+         "DEUTSCH",
+         "ENGLISCH"
+        ],
+        "value": 0
+       },
+       {
+        "type": "btn",
+        "label": "SPRACHPAKET LADEN"
+       }
+      ]
+     },
+     {
+      "title": "LAUNCHER-UPDATE",
+      "flex": false,
+      "controls": [
+       {
+        "type": "kv",
+        "label": "INSTALLIERT",
+        "value": "[VERSION]",
+        "bind": "appversion"
+       },
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Auto-Update",
+          "on": false,
+          "apply": "autoupdate"
+         },
+         {
+          "label": "Beta-Kanal",
+          "on": false
+         }
+        ],
+        "grid": false
+       },
+       {
+        "type": "btn",
+        "label": "NACH UPDATE SUCHEN"
+       }
+      ]
+     },
+     {
+      "title": "PFADE",
+      "flex": true,
+      "controls": [
+       {
+        "type": "kv",
+        "label": "SPIEL",
+        "value": "[PFAD]",
+        "bind": "path.game"
+       },
+       {
+        "type": "kv",
+        "label": "CACHE",
+        "value": "[PFAD]",
+        "bind": "path.cache"
+       },
+       {
+        "type": "kv",
+        "label": "LOGS",
+        "value": "[PFAD]",
+        "bind": "path.logs"
+       },
+       {
+        "type": "btn",
+        "label": "PFAD ÄNDERN"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "PROFIL · SYSTEM",
+      "flex": false,
+      "controls": [
+       {
+        "type": "hero",
+        "art": "system-0",
+        "title": "SYSTEM & THEME",
+        "sub": "LAUNCHER",
+        "desc": "Allgemeine Einstellungen, Sprache, Download, Diagnose und Farbschema."
+       }
+      ]
+     },
+     {
+      "title": "START",
+      "flex": false,
+      "controls": [
+       {
+        "type": "start"
+       },
+       {
+        "type": "kv",
+        "label": "BEREIT",
+        "value": "START · STAR CITIZEN LIVE"
+       }
+      ]
+     },
+     {
+      "title": "THEME · DRAKE",
+      "flex": true,
+      "controls": [
+       {
+        "type": "palette"
+       },
+       {
+        "type": "chips",
+        "options": [
+         "RSI",
+         "DRAKE",
+         "ORIGIN",
+         "MISC",
+         "BANU",
+         "ARGO"
+        ],
+        "value": 0,
+        "id": "theme",
+        "apply": "theme"
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "title": "INFO",
+      "flex": false,
+      "controls": [
+       {
+        "type": "kv",
+        "label": "VERSION",
+        "value": "[VERSION]",
+        "bind": "version"
+       },
+       {
+        "type": "kv",
+        "label": "BUILD",
+        "value": "[BUILD]",
+        "bind": "build"
+       },
+       {
+        "type": "kv",
+        "label": "KANAL",
+        "value": "[KANAL]",
+        "bind": "channel"
+       }
+      ]
+     },
+     {
+      "title": "DIAGNOSE",
+      "flex": true,
+      "controls": [
+       {
+        "type": "toggles",
+        "items": [
+         {
+          "label": "Detail-Logs",
+          "on": false
+         },
+         {
+          "label": "Telemetrie",
+          "on": false
+         }
+        ],
+        "grid": false
+       },
+       {
+        "type": "btn",
+        "label": "LOG EXPORTIEREN"
+       }
+      ]
+     }
+    ]
+   ]
+  }
+ ]
+}

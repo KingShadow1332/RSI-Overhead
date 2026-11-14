@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RSI Overhead</title>
+<style>
+:root{--bg:#0A0907;--panel:#141210;--acc:#F58A1F;--text:#EFE9DD;--muted:#A39A88}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,Segoe UI,sans-serif;display:grid;place-items:center;min-height:100vh;padding:16px}
+main{max-width:520px;border:1px solid #3B352B;border-radius:16px;background:var(--panel);padding:28px}
+h1{margin:0 0 4px;color:var(--acc);letter-spacing:.12em}
+p{color:var(--muted)} a{color:var(--acc)}
+code{background:#1D1A15;padding:2px 6px;border-radius:4px}
+</style>
+</head>
+<body>
+<main>
+  <h1>RSI OVERHEAD</h1>
+  <p>Launcher im Drake-Stil für Star Citizen. Die Updates holt sich das Programm von dieser Seite.</p>
+  <p>Aktuelle Version: <b id="v">…</b></p>
+  <p><a href="app/pc/rsi-overhead.zip">Programmpaket herunterladen</a> · Installation: <code>Setup.bat</code> aus dem Repository.</p>
+</main>
+<script>
+fetch('app/pc/version.json').then(r=>r.json()).then(d=>{document.getElementById('v').textContent=d.name}).catch(()=>{});
+</script>
+</body>
+</html>

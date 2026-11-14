@@ -1,0 +1,450 @@
+'use strict';
+/* RSI Overhead – Renderer.
+   Baut die Oberflaeche komplett aus config/*.json:
+     app.json      Rahmen (Titel, Statusleiste, Kopf-Buttons, Button->Aktion)
+     pages.json    Seiten > Spalten > Karten > Elemente
+     themes.json   Farbschemata
+     keybinds.json Tastenaktionen
+   Neues Element-Verhalten: Eintrag in RENDER (Aussehen) bzw. ACTIONS (Klick-Aktionen) ergaenzen. */
+
+const $ = (s, r = document) => r.querySelector(s);
+const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.innerHTML = x; return e; };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9äöü]+/g, '-').replace(/^-|-$/g, '');
+
+const DRAKE_HEX = { '0A0907': 'bg', '141210': 'panel', '1D1A15': 'panel2', '3B352B': 'line', 'F58A1F': 'acc', '9A5410': 'acc2',
+  'EFE9DD': 'text', 'A39A88': 'muted', '140A02': 'onacc', 'F2D14B': 'warn', 'F0544A': 'bad' };
+const ICONS = {
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
+  wifi: '<path d="M3 9a14 14 0 0 1 18 0M6 12.5a9.5 9.5 0 0 1 12 0M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="19" r="1"/>',
+  shield: '<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+};
+const icon = (n, c = 'var(--acc)') => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+
+let CFG = {}, S = { ui: {}, stats: {}, info: { paths: {} }, keys: { profiles: {} }, rebinds: {} }, THEME = 'RSI', PAGE = '', DRAFT = {}, LOADED = false;
+const ART = {};
+
+/* ---------- Server / Einstellungen ---------- */
+async function api(p, b) {
+  try {
+    const r = await fetch(p, b ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) } : undefined);
+    return await r.json();
+  } catch (e) { return { ok: false, error: 'KEINE VERBINDUNG' }; }
+}
+const get = (id, d) => (id in S.ui ? S.ui[id] : d);
+let pend = {}, tm;
+function set(id, v) {
+  S.ui[id] = v; pend[id] = v; clearTimeout(tm);
+  tm = setTimeout(() => { api('/api/set', { ui: pend }); pend = {}; }, 250);
+}
+async function refresh() {
+  const s = await api('/api/state');
+  if (!s || s.ok === false) return;
+  if (!LOADED) { S.ui = s.ui || {}; LOADED = true; }
+  delete s.ui; Object.assign(S, s); updateLive();
+  if (s.info && s.info.update && s.info.update.available && !refresh.told) {
+    refresh.told = true; toast('UPDATE ' + s.info.update.latest_name + ' VERFÜGBAR · SYSTEM › NACH UPDATE SUCHEN');
+  }
+}
+
+/* ---------- Theme / Skalierung ---------- */
+function applyTheme(n) {
+  if (!CFG.themes[n] || typeof CFG.themes[n] !== 'object') n = 'RSI';
+  THEME = n;
+  const b = document.querySelector('#brand i'); if (b && CFG.app.brandSub === 'auto') b.textContent = n === 'RSI' ? 'STAR CITIZEN' : n;
+  for (const [k, v] of Object.entries(CFG.themes[n])) document.documentElement.style.setProperty('--' + k, v);
+}
+const recolor = str => str.replace(/#([0-9A-Fa-f]{6})([0-9A-Fa-f]{2})?/g, (m, c, a) => {
+  const k = DRAKE_HEX[c.toUpperCase()]; return k ? CFG.themes[THEME][k] + (a || '') : m;
+});
+function fit() {
+  const { width: w, height: ht } = CFG.app.design, st = $('#stage');
+  /* Fluid: Faktor s so waehlen, dass das Design mindestens passt; die virtuelle Flaeche
+     (Fenster / s) wird komplett gefuellt -> beim Aufziehen bekommen Spalten und Karten mehr Platz. */
+  const s = Math.min(innerWidth / w, innerHeight / ht);
+  st.style.transform = `scale(${s})`;
+  st.style.width = innerWidth / s + 'px';
+  st.style.height = innerHeight / s + 'px';
+}
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ---------- Tasten ---------- */
+const profile = () => get('keys.profile', CFG.keys.profiles[0]);
+function keyFor(act) {
+  const p = profile();
+  if (DRAFT[p] && DRAFT[p][act.id] != null) return { t: DRAFT[p][act.id], mod: true };
+  const u = S.keys.profiles && S.keys.profiles[p] && S.keys.profiles[p][act.id];
+  if (u) return { t: u };
+  const rb = S.rebinds && S.rebinds[act.action];
+  if (rb && rb.length) return { t: rb[0] };
+  if (act.default) return { t: act.default };
+  return { t: null };
+}
+const shortKey = t => t.replace(/Left Mouse Button/g, 'Maus L').replace(/Right Mouse Button/g, 'Maus R').replace(/Middle Mouse Button/g, 'Maus M')
+  .replace(/\bLeft /g, 'L').replace(/\bRight /g, 'R').toUpperCase();
+
+/* ---------- Aktionen (Buttons) ---------- */
+function confirmClick(btn, fn) {
+  if (btn.dataset.arm) { clearTimeout(+btn.dataset.arm); delete btn.dataset.arm; btn.textContent = btn.dataset.txt; fn(); return; }
+  btn.dataset.txt = btn.textContent; btn.textContent = 'WIRKLICH?';
+  btn.dataset.arm = setTimeout(() => { delete btn.dataset.arm; btn.textContent = btn.dataset.txt; }, 3000);
+}
+const ACTIONS = {
+  'keys.save': async () => {
+    const p = profile(), m = Object.assign({}, (S.keys.profiles || {})[p] || {}, DRAFT[p] || {});
+    const r = await api('/api/keys/save', { profile: p, map: m });
+    if (r.ok) { (S.keys.profiles = S.keys.profiles || {})[p] = m; delete DRAFT[p]; toast('GESPEICHERT · ' + p); renderPage(); } else toast(r.error || 'FEHLER');
+  },
+  'keys.load': async () => { await refresh(); delete DRAFT[profile()]; renderPage(); toast('GELADEN · ' + profile()); },
+  'reset': async () => {
+    await api('/api/reset', {}); S.ui = {}; DRAFT = {}; applyTheme('RSI'); build(); toast('STANDARD WIEDERHERGESTELLT');
+  },
+  'launch': async () => { const r = await api('/api/launch', {}); toast(r.ok ? 'STAR CITIZEN WIRD GESTARTET' : (r.error || 'FEHLER')); },
+};
+/* Update: erster Klick sucht, ist eins da, wird der Button zu "UPDATE INSTALLIEREN" (zweiter Klick installiert, dann Neustart). */
+ACTIONS['update.check'] = async btn => {
+  if (btn && btn.dataset.ready) {
+    toast('UPDATE WIRD INSTALLIERT …');
+    const r = await api('/api/update/apply', {});
+    toast(r.ok ? 'INSTALLIERT · NEUSTART …' : (r.error || 'FEHLER'));
+    return;
+  }
+  toast('SUCHE NACH UPDATE …');
+  const r = await api('/api/update/check', {});
+  if (!r.ok) { toast(r.error || 'FEHLER'); return; }
+  if (!r.available) { toast('AKTUELL · VERSION ' + r.name); return; }
+  toast('UPDATE ' + r.latest_name + ' VERFÜGBAR' + (r.notes && r.notes.length ? ' · ' + r.notes[r.notes.length - 1].slice(0, 60) : ''));
+  if (btn) { btn.dataset.ready = '1'; btn.textContent = 'UPDATE INSTALLIEREN'; }
+};
+ACTIONS.quit = async () => { await api('/api/quit', {}); toast('BEENDET'); setTimeout(() => window.close(), 300); };
+ACTIONS['paths.change'] = async () => {
+  toast('ORDNER WÄHLEN …');
+  const r = await api('/api/pickdir', {});
+  if (r.ok) { await refresh(); renderPage(); toast('SPIELORDNER GESETZT'); } else toast(r.error || 'FEHLER');
+};
+ACTIONS.backup = async () => { const r = await api('/api/backup', {}); toast(r.ok ? 'KEYBINDS GESICHERT (Ordner backups)' : (r.error || 'FEHLER')); };
+for (const w of ['game', 'logs', 'screens', 'config', 'gamelog', 'cache', 'status'])
+  ACTIONS['open.' + w] = async () => { const r = await api('/api/open', { what: w }); if (!r.ok) toast(r.error || 'ORDNER NICHT GEFUNDEN'); };
+
+function runAction(name, label, btn) {
+  const a = name || CFG.app.labelActions[(label || '').toUpperCase()];
+  if (!a || !ACTIONS[a]) { toast('NOCH NICHT VERBUNDEN'); return; }
+  if (a === 'reset') confirmClick(btn, ACTIONS[a]); else ACTIONS[a](btn);
+}
+
+/* ---------- Bindungen von Platzhaltern ---------- */
+function bindText(b) {
+  const i = S.info || {}, p = (i.paths || {});
+  const v = { ping: S.stats.ping != null ? S.stats.ping + ' ms' : '—', version: i.version, build: i.build, channel: i.channel, device: i.device,
+    'path.game': p.game, 'path.cache': p.cache, 'path.logs': p.logs, appversion: i.app_version,
+    cpu: S.stats.cpu != null ? S.stats.cpu + ' %' : null, ram: S.stats.ram != null ? S.stats.ram + ' %' : null,
+    game: i.game_running ? 'LÄUFT' : 'NICHT GESTARTET', hotkey: S.hotkey ? String(S.hotkey).toUpperCase().replace(/\+/g, ' + ') : null }[b];
+  return v || '—';
+}
+function updateLive() {
+  document.querySelectorAll('[data-bind]').forEach(e => { e.textContent = bindText(e.dataset.bind); e.title = e.textContent; });
+  const run = !!(S.info && S.info.game_running);
+  document.querySelectorAll('.pill').forEach(p => {
+    const st = p.dataset.status;
+    p.classList.remove('ok', 'wait', 'off');
+    p.classList.add(st === 'ping' ? (S.stats.ping != null ? 'ok' : 'off') : st === 'game' ? (run ? 'ok' : 'wait') : 'ok');
+  });
+  const s = $('#state'); if (s) s.textContent = run ? CFG.app.statusText.running : CFG.app.statusText.ready;
+}
+
+/* ---------- Elemente ---------- */
+const RENDER = {
+  seg(c, id) {
+    const cur = c.apply === 'theme' ? c.options.indexOf(THEME) : get(id, c.value);
+    const w = h('div', 'row');
+    c.options.forEach((o, i) => {
+      const l = h('label', 'seg', `<input type="radio" name="${esc(id)}" ${i === cur ? 'checked' : ''}><span>${esc(o)}</span>`);
+      $('input', l).onchange = () => {
+        if (c.apply === 'theme') { set('theme', o); applyTheme(o); renderPage(); } else set(id, i);
+      };
+      w.append(l);
+    });
+    return w;
+  },
+  chips(c, id) {
+    const cur = c.apply === 'profile' ? Math.max(0, CFG.keys.profiles.indexOf(profile()))
+      : c.apply === 'theme' ? c.options.indexOf(THEME) : get(id, c.value);
+    const w = h('div', 'chips');
+    c.options.forEach((o, i) => {
+      const l = h('label', 'chip', `<input type="radio" name="${esc(id)}" ${i === cur ? 'checked' : ''}><span>${esc(o)}</span>`);
+      $('input', l).onchange = () => {
+        if (c.apply === 'profile') { set('keys.profile', o); renderPage(); }
+        else if (c.apply === 'theme') { set('theme', o); applyTheme(o); renderPage(); }
+        else set(id, i);
+      };
+      w.append(l);
+    });
+    return w;
+  },
+  toggles(c, id) {
+    const w = h('div', 'tgs' + (c.grid ? ' grid' : ''));
+    c.items.forEach(it => {
+      const sid = id + '/' + slug(it.label);
+      /* it.apply: echte Einstellung (Host) statt nur gespeicherter Schalter, z. B. Autostart, Overlay */
+      const real = it.apply && S.info && S.info.settings ? S.info.settings[it.apply] : undefined;
+      const on = real !== undefined ? real : get(sid, it.on);
+      const l = h('label', 'tg', `<span class="lb">${esc(it.label)}</span><input type="checkbox" ${on ? 'checked' : ''}><span class="trk"><span class="knob"></span></span>`);
+      $('input', l).onchange = async e => {
+        if (!it.apply) { set(sid, e.target.checked); return; }
+        const r = await api('/api/setting', { key: it.apply, value: e.target.checked });
+        if (!r.ok) { e.target.checked = !e.target.checked; toast(r.error || 'FEHLER'); return; }
+        await refresh(); renderPage(); toast(it.label.toUpperCase() + (e.target.checked ? ' · AN' : ' · AUS'));
+      };
+      w.append(l);
+    });
+    return w;
+  },
+  range(c, id) {
+    const sid = id + '/' + slug(c.label);
+    const w = h('div', 'field', `<span class="lbl">${esc(c.label)}</span><input class="rng" type="range" min="${c.min}" max="${c.max}" value="${get(sid, c.value)}" aria-label="${esc(c.label)}">`);
+    $('input', w).oninput = e => set(sid, +e.target.value);
+    return w;
+  },
+  kv(c) {
+    if (c.edit) return editableKv(c);
+    const w = h('div', 'kv', `<span class="lbl">${esc(c.label)}</span><b ${c.bind ? `data-bind="${esc(c.bind)}"` : ''}>${esc(c.bind ? bindText(c.bind) : (c.value.startsWith('[') ? '—' : c.value))}</b>`);
+    return w;
+  },
+  key(c) {
+    const act = CFG.keys.actions.find(a => a.label.toUpperCase() === c.label.toUpperCase());
+    const w = h('div', 'keyrow', `<span>${esc(c.label)}</span>`), b = h('button', 'key');
+    const paint = () => {
+      const k = act ? keyFor(act) : { t: null };
+      b.className = 'key' + (k.mod ? ' mod' : '') + (k.t ? '' : ' none');
+      b.textContent = k.t ? shortKey(k.t) : 'NICHT BELEGT';
+    };
+    paint();
+    b.onclick = async () => {
+      if (!act) { toast('KEINE AKTION IN keybinds.json'); return; }
+      b.className = 'key cap'; b.textContent = 'TASTE DRÜCKEN …';
+      const r = await api('/api/capture', {});
+      if (r.key) { (DRAFT[profile()] = DRAFT[profile()] || {})[act.id] = r.key; toast('NICHT VERGESSEN: KEYBINDS SPEICHERN'); } else toast('ABGEBROCHEN');
+      paint();
+    };
+    w.append(b);
+    return w;
+  },
+  btn(c) {
+    const b = h('button', 'btn'); b.textContent = c.label; b.onclick = () => runAction(c.action, c.label, b); return b;
+  },
+  danger(c) {
+    const b = h('button', 'bad'); b.textContent = c.label; b.onclick = () => runAction(c.action, c.label, b); return b;
+  },
+  btnrow(c) {
+    const w = h('div', 'row');
+    c.items.forEach(l => { const b = h('button', 'sq'); b.textContent = l; b.onclick = () => runAction(null, l, b); w.append(b); });
+    return w;
+  },
+  start() {
+    const w = h('div'); w.style.position = 'relative';
+    w.innerHTML = '<div class="startlbl">ZUM STARTEN SCHIEBEN</div><input class="slide" type="range" min="0" max="100" value="0" aria-label="Zum Starten schieben">';
+    const i = $('input', w), l = $('.startlbl', w);
+    i.oninput = () => { l.style.opacity = Math.max(0, 1 - i.value / 50); };
+    i.onchange = () => { if (+i.value >= 95) ACTIONS.launch(); i.value = 0; l.style.opacity = 1; };
+    return w;
+  },
+  art(c) { const w = h('div', 'art'); loadArt(c.src, w); return w; },
+  hero(c) {
+    const w = h('div', 'hero'); const a = h('div', 'art'); loadArt(c.art, a); w.append(a);
+    w.append(h('div', 'ttl', esc(c.title)), h('div', 'sub', esc(c.sub.startsWith('[') ? '—' : c.sub)), h('div', 'dsc', esc(c.desc)));
+    return w;
+  },
+  power(c, id) {
+    const w = h('div', 'pw');
+    c.groups.forEach(g => {
+      const sid = id + '/' + g.id, grp = h('div', 'pwg'), col = h('div', 'pwr');
+      const paint = () => col.querySelectorAll('.pc').forEach(x => x.classList.toggle('on', +x.dataset.l === get(sid, g.value)));
+      for (let l = g.levels; l >= 1; l--) {
+        const x = h('div', 'pc'); x.dataset.l = l; x.title = g.label + ' ' + l;
+        x.onclick = () => { set(sid, l); paint(); };
+        col.append(x);
+      }
+      paint(); grp.append(col, h('span', '', esc(g.label))); w.append(grp);
+    });
+    return w;
+  },
+  palette() {
+    const w = h('div', 'pal'), t = CFG.themes[THEME];
+    for (const k of ['bg', 'panel', 'panel2', 'line', 'acc', 'acc2', 'text', 'muted', 'onacc', 'warn', 'bad'])
+      w.append(h('div', '', `<i style="background:${t[k]}"></i><b>${k.toUpperCase()}</b><em>${esc(t[k])}</em>`));
+    return w;
+  },
+};
+
+/* Wert zum Selbsteintragen (Klick). Der aUEC-Stand liegt nur auf den CIG-Servern, nicht lokal im Spiel. */
+function editableKv(c) {
+  const id = 'acct.' + c.edit, num = c.edit === 'auec';
+  const w = h('div', 'kv'), v = h('b', 'editable');
+  w.append(h('span', 'lbl', esc(c.label)), v);
+  v.title = num ? 'Klicken zum Eintragen (der aUEC-Stand ist lokal nicht auslesbar)' : 'Klicken zum Eintragen';
+  const show = () => {
+    const x = get(id, '');
+    v.textContent = x === '' ? '—' : (num ? Number(x).toLocaleString('de-DE') : x);
+  };
+  v.onclick = () => {
+    const i = h('input', 'edit'); i.value = get(id, ''); if (num) i.inputMode = 'numeric';
+    v.replaceWith(i); i.focus(); i.select();
+    const done = ok => {
+      if (ok) { let x = i.value.trim(); if (num) x = x.replace(/[^0-9]/g, ''); set(id, x); }
+      i.replaceWith(v); show();
+    };
+    i.onblur = () => done(true);
+    i.onkeydown = e => { if (e.key === 'Enter') i.blur(); else if (e.key === 'Escape') { i.onblur = null; done(false); } };
+  };
+  show();
+  return w;
+}
+
+async function loadArt(src, host) {
+  if (!ART[src]) ART[src] = fetch('art/' + src + '.svg').then(r => r.text()).catch(() => '');
+  host.innerHTML = recolor(await ART[src]);
+}
+
+/* ---------- Seiten ---------- */
+function renderCard(card, pid, idx) {
+  const title = card.title.startsWith('THEME') ? 'THEME · ' + THEME
+    : card.title.startsWith('TASTENBELEGUNG') ? 'TASTENBELEGUNG · ' + profile() : card.title;
+  const c = h('section', 'card' + (card.flex ? ' flex' : ''),
+    '<i class="d a"></i><i class="d b"></i><i class="d c"></i><i class="d e"></i><span class="t"></span>');
+  $('.t', c).textContent = title;
+  c.style.animationDelay = (idx * 0.035) + 's';
+  const base = pid + '/' + slug(card.title), n = {};
+  card.controls.forEach(ct => {
+    n[ct.type] = (n[ct.type] || 0) + 1;
+    const f = RENDER[ct.type];
+    if (f) c.append(f(ct, ct.id || `${base}/${ct.type}${n[ct.type]}`));
+  });
+  return c;
+}
+
+/* ---------- Layout (Module) ----------
+   Jede Karte ist ein Modul mit dem Schluessel "seite/titel". Die Anordnung kommt aus pages.json;
+   im Bearbeiten-Modus kann sie pro Seite veraendert werden (verschieben, entfernen, Module aus
+   anderen Seiten hinzufuegen) und wird in den Einstellungen gespeichert. */
+const REG = {};
+const cardKey = (pid, card) => pid + '/' + slug(card.title);
+function buildRegistry() {
+  CFG.pages.pages.forEach(p => p.columns.forEach(col => col.forEach(card => { REG[cardKey(p.id, card)] = { card, pid: p.id }; })));
+}
+function layoutFor(page) {
+  const saved = (get('layout', {}) || {})[page.id];
+  if (saved) return saved.map(col => col.filter(k => REG[k]));
+  return page.columns.map(col => col.map(c => cardKey(page.id, c)));
+}
+function saveLayout(pid, L) { set('layout', Object.assign({}, get('layout', {}), { [pid]: L })); renderPage(); }
+function moveCard(page, key, dx, dy) {
+  const L = layoutFor(page).map(c => c.slice());
+  let ci = L.findIndex(c => c.includes(key)); if (ci < 0) return;
+  let ri = L[ci].indexOf(key);
+  if (dy) { const j = ri + dy; if (j < 0 || j >= L[ci].length) return; [L[ci][ri], L[ci][j]] = [L[ci][j], L[ci][ri]]; }
+  if (dx) {
+    const nc = ci + dx; if (nc < 0 || nc >= L.length) return;
+    L[ci].splice(ri, 1); L[nc].splice(Math.min(ri, L[nc].length), 0, key);
+  }
+  saveLayout(page.id, L);
+}
+function toolbar(page, key) {
+  const t = h('div', 'etools');
+  [['◀', -1, 0, 'Spalte links'], ['▲', 0, -1, 'nach oben'], ['▼', 0, 1, 'nach unten'], ['▶', 1, 0, 'Spalte rechts']].forEach(([s, dx, dy, tip]) => {
+    const b = h('button', '', s); b.title = tip; b.onclick = () => moveCard(page, key, dx, dy); t.append(b);
+  });
+  const x = h('button', 'rm', '✕'); x.title = 'Modul entfernen';
+  x.onclick = () => saveLayout(page.id, layoutFor(page).map(c => c.filter(k => k !== key)));
+  t.append(x);
+  return t;
+}
+function renderLib(page) {
+  const lib = $('#lib'); if (!lib) return;
+  lib.style.display = EDIT ? 'flex' : 'none';
+  if (!EDIT) return;
+  const used = new Set(layoutFor(page).flat());
+  lib.innerHTML = '<span class="lbl">MODULE</span>';
+  const free = Object.keys(REG).filter(k => !used.has(k));
+  free.forEach(k => {
+    const b = h('button', 'mod'); b.textContent = '+ ' + REG[k].card.title + ' · ' + REG[k].pid.toUpperCase();
+    b.onclick = () => {
+      const L = layoutFor(page).map(c => c.slice());
+      L.reduce((a, c) => (c.length < a.length ? c : a), L[0]).push(k); saveLayout(page.id, L);
+    };
+    lib.append(b);
+  });
+  if (!free.length) lib.append(h('span', 'lbl', '– alle Module sind auf dieser Seite –'));
+  const r = h('button', 'mod reset'); r.textContent = 'LAYOUT ZURÜCKSETZEN';
+  r.onclick = () => { const all = Object.assign({}, get('layout', {})); delete all[page.id]; set('layout', all); renderPage(); };
+  lib.append(r);
+}
+let EDIT = false;
+
+function renderPage() {
+  const page = CFG.pages.pages.find(p => p.id === PAGE) || CFG.pages.pages[0], grid = $('#grid');
+  grid.innerHTML = '';
+  grid.classList.toggle('edit', EDIT);
+  let i = 0;
+  layoutFor(page).forEach(col => {
+    const cd = h('div', 'col');
+    col.forEach(key => {
+      const m = REG[key]; if (!m) return;
+      const c = renderCard(m.card, m.pid, i++);
+      if (EDIT) c.append(toolbar(page, key));
+      cd.append(c);
+    });
+    if (cd.children.length && !cd.querySelector('.flex')) cd.lastElementChild.classList.add('flex');   // Resthoehe auffuellen
+    grid.append(cd);
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p === page.id));
+  renderLib(page);
+  updateLive();
+}
+function setPage(id) { PAGE = id; set('page', id); renderPage(); }
+
+function build() {
+  const A = CFG.app;
+  document.title = A.title;
+  $('#root').innerHTML = `<div id="frame"><div id="scan" aria-hidden="true"></div>
+    <div id="top"><div id="brand"><b></b><i></i></div><nav></nav><span class="grow"></span><span id="hb" style="display:flex;gap:14px"></span></div>
+    <div id="pills"></div><div id="grid"></div><div id="lib"></div>
+    <div id="foot"><div style="display:flex;align-items:center;gap:10px"><span class="lockic">${icon('lock', 'var(--bad)')}</span><button class="bad" id="fr"></button></div>
+      <div id="hz"></div><div style="width:220px"><button class="btn" id="fc"></button></div></div>
+    <div id="toast"></div></div>`;
+  $('#brand b').textContent = A.brand; $('#brand i').textContent = A.brandSub === 'auto' ? (THEME === 'RSI' ? 'STAR CITIZEN' : THEME) : A.brandSub;
+  CFG.pages.pages.forEach(p => { const t = h('button', 'tab'); t.textContent = p.title; t.dataset.p = p.id; t.onclick = () => setPage(p.id); $('nav').append(t); });
+  A.headerButtons.forEach(b => {
+    const x = h('button', 'ib', icon(b.icon)); x.title = b.title; x.setAttribute('aria-label', b.title);
+    x.onclick = () => {
+      if (b.action === 'edit') { EDIT = !EDIT; x.classList.toggle('on', EDIT); renderPage(); toast(EDIT ? 'LAYOUT-MODUS: MODULE VERSCHIEBEN, ENTFERNEN, HINZUFÜGEN' : 'LAYOUT GESPEICHERT'); }
+      else if (b.goto) setPage(b.goto); else toast(b.toast || '');
+    };
+    $('#hb').append(x);
+  });
+  const pl = $('#pills');
+  A.pills.forEach(p => pl.append(h('span', 'pill ok', `<i></i>${esc(p.label)}`)));
+  pl.querySelectorAll('.pill').forEach((e, i) => e.dataset.status = A.pills[i].status);
+  pl.append(h('span', '', '')); pl.lastChild.id = 'state';
+  $('#fr').textContent = A.footer.reset; $('#fr').onclick = e => runAction('reset', '', e.target);
+  $('#fc').textContent = A.footer.clear; $('#fc').onclick = () => toast('NOCH NICHT VERBUNDEN');
+  renderPage();
+}
+
+async function boot() {
+  const j = u => fetch(u).then(r => r.json());
+  [CFG.app, CFG.pages, CFG.themes, CFG.keys] = await Promise.all([j('config/app.json'), j('config/pages.json'), j('config/themes.json'), j('config/keybinds.json')]);
+  buildRegistry();
+  await refresh();
+  applyTheme(get('theme', 'RSI'));
+  PAGE = get('page', CFG.pages.pages[0].id);
+  build(); fit();
+  addEventListener('resize', fit);
+  addEventListener('pagehide', () => navigator.sendBeacon('/api/bye', '{}'));
+  setInterval(refresh, 1000);
+}
+boot();

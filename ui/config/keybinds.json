@@ -1,0 +1,17 @@
+{
+  "_hinweis": "Jede Aktion: id (frei), label (muss dem Namen in pages.json entsprechen, Gross/Klein egal), action = Aktionsname in der actionmaps.xml des Spiels (zum Auslesen EIGENER Aenderungen), default = Standardtaste laut Star Citizen Wiki (starcitizen.tools/Guide:Controls). Ohne default wird 'NICHT BELEGT' angezeigt. Die Aktionsnamen sind Best-Effort: stimmt einer nicht, greift einfach der Standardwert.",
+  "profiles": ["STANDARD", "KAMPF", "MINING", "SALVAGE"],
+  "actions": [
+    {"id": "weapons1",   "label": "WAFFENGRUPPE 1",     "map": "spaceship_weapons",  "action": "v_attack1_group1",                    "default": "Left Mouse Button"},
+    {"id": "weapons2",   "label": "WAFFENGRUPPE 2",     "map": "spaceship_weapons",  "action": "v_attack1_group2",                    "default": "Right Mouse Button"},
+    {"id": "missile",    "label": "RAKETE ABFEUERN",    "map": "spaceship_missiles", "action": "v_weapon_launch_missile",             "default": "Left Mouse Button"},
+    {"id": "lock",       "label": "ZIEL SPERREN",       "map": "spaceship_targeting","action": "v_target_lock_selected",              "default": "F8"},
+    {"id": "decouple",   "label": "DECOUPLE",           "map": "spaceship_movement", "action": "v_ifcs_toggle_vector_decoupling",     "default": "Left Alt + C"},
+    {"id": "scmnav",     "label": "SCM / NAV",          "map": "spaceship_movement", "action": "v_ifcs_toggle_scm_mode",              "default": null},
+    {"id": "shields",    "label": "SCHILD-VERTEILUNG",  "map": "spaceship_defensive","action": "v_shield_raise_level_front",          "default": "Num 8 / 2 / 4 / 6 / 5"},
+    {"id": "flares",     "label": "FLARES",             "map": "spaceship_defensive","action": "v_weapon_countermeasure_launch_decoy","default": "H (halten)"},
+    {"id": "noise",      "label": "NOISE",              "map": "spaceship_defensive","action": "v_weapon_countermeasure_launch_noise","default": "J"},
+    {"id": "cruise",     "label": "CRUISE CONTROL",     "map": "spaceship_movement", "action": "v_ifcs_toggle_cruise_control",        "default": "C"},
+    {"id": "quantum",    "label": "QUANTUM-REISE",      "map": "spaceship_quantum",  "action": "v_qdrive_engage",                     "default": "B (halten)"}
+  ]
+}

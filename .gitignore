@@ -1,0 +1,11 @@
+# Laufzeitdaten / persoenliche Einstellungen (nie veroeffentlichen)
+settings.json
+keybinds_user.json
+update_applied.json
+backups/
+
+# Python / Editor
+__pycache__/
+*.pyc
+.vscode/
+.idea/
